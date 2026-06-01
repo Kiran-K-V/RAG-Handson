@@ -48,7 +48,7 @@ def load_documents(folder_path: str) -> dict[str, str]:
 
     Returns:
         A dictionary mapping each filename (str) to its full text content (str).
-        Example: {"college_handbook.txt": "IIT Dolakhpur was founded..."}
+        Example: {"college_handbook.txt": "IIT Dholakpur was established..."}
 
     Raises:
         FileNotFoundError: If the folder does not exist or contains no .txt files.

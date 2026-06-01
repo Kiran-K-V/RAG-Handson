@@ -41,7 +41,7 @@ def get_chroma_client(persist_directory: str = "chroma_db") -> Any:
     raise NotImplementedError("Step 1-2: Create a persistent ChromaDB client")
 
 
-def create_collection(client: Any, collection_name: str = "iitd_helpdesk") -> Any:
+def create_collection(client: Any, collection_name: str = "dholakpur_helpdesk") -> Any:
     """Create or retrieve a named ChromaDB collection.
 
     A collection in ChromaDB is like a table in a database — it holds vectors,
@@ -51,14 +51,14 @@ def create_collection(client: Any, collection_name: str = "iitd_helpdesk") -> An
     Args:
         client: A ChromaDB client instance (from get_chroma_client).
         collection_name: Name for the vector collection.
-            Defaults to "iitd_helpdesk".
+            Defaults to "dholakpur_helpdesk".
 
     Returns:
         A ChromaDB Collection object.
 
     Story:
         All three documents (handbook, attendance, placement) go into one
-        collection called "iitd_helpdesk". This way a single query searches
+        collection called "dholakpur_helpdesk". This way a single query searches
         across all documents at once — the student doesn't need to know which
         file contains the answer.
     """

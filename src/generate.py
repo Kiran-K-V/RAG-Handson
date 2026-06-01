@@ -39,7 +39,7 @@ def build_prompt(query: str, context: str) -> str:
     # policies, exam dates, and phone numbers that don't exist.
 
     # TODO 1 — Define a system instruction string that tells the LLM:
-    #   - It is a helpful assistant for IIT Dolakhpur students
+    #   - It is a helpful assistant for IIT Dholakpur students
     #   - It must ONLY answer based on the provided context
     #   - It must cite the source document in its answer
     #   - If the context doesn't contain the answer, say so honestly

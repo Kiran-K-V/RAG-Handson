@@ -2,17 +2,20 @@
 
 ## The Story
 
-The student helpdesk at IIT Dolakhpur is drowning. Every semester, thousands of students
-ask the same questions: *"What is the minimum attendance?" "Am I eligible for placements?"
-"What time does the canteen close?"* The staff are overwhelmed, the phone lines are
+The student helpdesk at IIT Dholakpur is drowning. Yes, *that* Dholakpur — the
+legendary kingdom where Bheem once roamed, now home to one of India's finest engineering
+institutes. Every semester, thousands of students ask the same questions: *"What is the
+minimum attendance?" "Am I eligible for placements?" "What time does Bheem's Kitchen
+close?" "Can I get ladoos after 10 PM?"* The staff are overwhelmed, the phone lines are
 jammed, and students end up hunting through 50-page PDFs for answers that should take
 10 seconds to find.
 
-You've been brought in as a junior developer to fix this. The administration has handed
-you three text files — the college handbook, the attendance policy, and the placement
-guidelines. Your mission: build an AI-powered chatbot that can answer any student query
-accurately, grounded only in these documents. No hallucinations. No generic answers.
-Every response must cite which document it came from.
+You've been brought in as a junior developer to fix this. The administration (under the
+watchful eye of the Raja of Dholakpur himself) has handed you three text files — the
+college handbook, the attendance policy, and the placement guidelines. Your mission:
+build an AI-powered chatbot that can answer any student query accurately, grounded only
+in these documents. No hallucinations. No generic answers. Every response must cite
+which document it came from.
 
 ## What You Will Build
 
@@ -38,7 +41,7 @@ piece exists.
 ### What is RAG and why does it exist?
 
 Large Language Models (LLMs) are trained on internet-scale data, but they don't know
-about IIT Dolakhpur. If you ask GPT "What is the attendance policy at IITD?", it will
+about IIT Dholakpur. If you ask GPT "What is the attendance policy at IITD?", it will
 either hallucinate a plausible-sounding answer or admit it doesn't know. RAG solves this
 by **retrieving** relevant documents first, then asking the LLM to **generate** an
 answer using only those documents as context. The LLM becomes a reader, not a guesser.
