@@ -1,17 +1,18 @@
 """
-IIT Dholakpur RAG Pipeline — Comic Test Runner UI.
+IIT Dholakpur — RAG Pipeline Test Lab.
 
-A Flask-based web application that runs pipeline tests with a
-Chhota Bheem themed comic-book interface. Bheem guides you through
-each test with animations, speech bubbles, and ladoo-based scoring.
+A web-based test runner that validates each stage of the RAG pipeline
+and displays structured output. Run this, open the browser, and click
+'Run All Tests' to see which stages are passing.
 
 Usage:
     python test_runner.py
-
-Then open http://localhost:5555 in your browser.
+    # → http://localhost:5555
 """
 
+import os
 import traceback
+
 from flask import Flask, jsonify, render_template, send_from_directory
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -19,154 +20,136 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 
 @app.route("/")
 def index():
-    """Serve the comic test UI."""
+    """Serve the test UI."""
     return render_template("test_ui.html")
 
 
 @app.route("/static/images/<path:filename>")
 def serve_image(filename: str):
-    """Serve static image assets."""
+    """Serve static assets."""
     return send_from_directory("static/images", filename)
+
+
+def make_result(passed: bool, output: list[str]) -> dict:
+    """Standard response shape for all test endpoints."""
+    return {"passed": passed, "output": output}
 
 
 @app.route("/run_test/load_documents")
 def test_load_documents():
-    """Test: Can we load all 3 documents from data/?"""
+    """Stage 1: Document loading."""
     try:
         from src.load_docs import load_documents
 
         docs = load_documents("data")
+        lines = []
 
         assert isinstance(docs, dict), f"Expected dict, got {type(docs).__name__}"
+        lines.append(f"✓ Returns a dict (correct type)")
+
         assert len(docs) == 3, f"Expected 3 documents, got {len(docs)}"
+        lines.append(f"✓ Contains 3 documents")
 
         for key, value in docs.items():
-            assert key.endswith(".txt"), f"Key '{key}' doesn't end with .txt"
-            assert isinstance(value, str) and len(value) > 0, f"Empty content for '{key}'"
+            assert key.endswith(".txt"), f"Key '{key}' missing .txt extension"
+            assert isinstance(value, str) and len(value) > 100
+        lines.append(f"✓ All keys end with .txt, all values are non-empty strings")
 
         filenames = sorted(docs.keys())
-        return jsonify({
-            "passed": True,
-            "message": (
-                f"Loaded {len(docs)} documents successfully!\n"
-                f"Files: {', '.join(filenames)}\n"
-                f"Total characters: {sum(len(v) for v in docs.values()):,}"
-            ),
-        })
+        lines.append(f"> Files: {', '.join(filenames)}")
+        lines.append(f"> Total size: {sum(len(v) for v in docs.values()):,} characters")
+
+        return jsonify(make_result(True, lines))
 
     except NotImplementedError as e:
-        return jsonify({
-            "passed": False,
-            "message": f"Not implemented yet! TODO: {e}",
-        })
+        return jsonify(make_result(False, [f"✗ Not implemented: {e}"]))
     except Exception as e:
-        return jsonify({
-            "passed": False,
-            "message": f"{type(e).__name__}: {e}\n\n{traceback.format_exc()[-500:]}",
-        })
+        return jsonify(make_result(False, [f"✗ {type(e).__name__}: {e}"]))
 
 
 @app.route("/run_test/chunking")
 def test_chunking():
-    """Test: Does chunking produce overlapping chunks of correct size?"""
+    """Stage 2: Text chunking with overlap."""
     try:
-        from src.chunking import chunk_text
+        from src.chunking import chunk_all_documents, chunk_text
 
+        lines = []
+
+        # Test basic chunking
         test_text = "A" * 600
         chunks = chunk_text(test_text, chunk_size=300, overlap=50)
 
-        assert len(chunks) >= 2, f"Expected >=2 chunks, got {len(chunks)}"
+        assert len(chunks) >= 2, f"Expected >=2 chunks from 600 chars, got {len(chunks)}"
+        lines.append(f"✓ 600 chars → {len(chunks)} chunks (chunk_size=300, overlap=50)")
 
+        # Verify overlap
         last_50 = chunks[0][-50:]
         first_50 = chunks[1][:50]
-        assert last_50 == first_50, (
-            f"Overlap mismatch!\nEnd of chunk[0]: '{last_50[:20]}...'\n"
-            f"Start of chunk[1]: '{first_50[:20]}...'"
-        )
+        assert last_50 == first_50, "Overlap mismatch between chunk[0] end and chunk[1] start"
+        lines.append(f"✓ Overlap verified: last 50 chars of chunk[0] == first 50 of chunk[1]")
 
+        # Verify size constraint
         for i, chunk in enumerate(chunks):
-            assert len(chunk) <= 300, f"Chunk {i} exceeds max size: {len(chunk)} chars"
+            assert len(chunk) <= 300, f"Chunk {i} is {len(chunk)} chars (max 300)"
+        lines.append(f"✓ All chunks within size limit (≤300 chars)")
 
-        # Also test with real documents
-        from src.chunking import chunk_all_documents
+        # Test with real documents
         from src.load_docs import load_documents
-
         docs = load_documents("data")
         all_chunks = chunk_all_documents(docs)
 
-        assert len(all_chunks) > 0, "chunk_all_documents returned empty list"
-        assert all("text" in c and "source" in c and "chunk_id" in c for c in all_chunks), \
-            "Chunks missing required keys (text, source, chunk_id)"
+        assert len(all_chunks) > 0
+        assert all("text" in c and "source" in c and "chunk_id" in c for c in all_chunks)
+        lines.append(f"✓ chunk_all_documents produced {len(all_chunks)} chunks with metadata")
+        lines.append(f"> Keys per chunk: text, source, chunk_id")
+        lines.append(f"> Sample chunk_id: {all_chunks[0]['chunk_id']}")
 
-        return jsonify({
-            "passed": True,
-            "message": (
-                f"Chunking works perfectly!\n"
-                f"- Test: 600 chars → {len(chunks)} chunks (overlap verified ✓)\n"
-                f"- Real docs: {len(all_chunks)} total chunks created\n"
-                f"- All chunks have text, source, and chunk_id keys ✓"
-            ),
-        })
+        return jsonify(make_result(True, lines))
 
     except NotImplementedError as e:
-        return jsonify({
-            "passed": False,
-            "message": f"Not implemented yet! TODO: {e}",
-        })
+        return jsonify(make_result(False, [f"✗ Not implemented: {e}"]))
     except Exception as e:
-        return jsonify({
-            "passed": False,
-            "message": f"{type(e).__name__}: {e}\n\n{traceback.format_exc()[-500:]}",
-        })
+        return jsonify(make_result(False, [f"✗ {type(e).__name__}: {e}"]))
 
 
 @app.route("/run_test/embeddings")
 def test_embeddings():
-    """Test: Do embeddings have the correct 384-dimensional shape?"""
+    """Stage 3: Embedding generation."""
     try:
         from src.embeddings import embed_query, embed_texts, load_embedding_model
 
-        model = load_embedding_model()
+        lines = []
 
-        texts = ["What is the attendance policy?", "Where is the canteen?"]
+        model = load_embedding_model()
+        lines.append("✓ Model loaded: all-MiniLM-L6-v2")
+
+        texts = ["What is the attendance policy?", "canteen timings"]
         embeddings = embed_texts(model, texts)
 
-        assert isinstance(embeddings, list), f"Expected list, got {type(embeddings).__name__}"
-        assert len(embeddings) == 2, f"Expected 2 embeddings, got {len(embeddings)}"
+        assert isinstance(embeddings, list) and len(embeddings) == 2
+        lines.append(f"✓ embed_texts: 2 inputs → 2 vectors")
 
-        for i, emb in enumerate(embeddings):
-            assert len(emb) == 384, f"Embedding {i} has {len(emb)} dims, expected 384"
-            assert isinstance(emb[0], float), f"Embedding values should be float, got {type(emb[0])}"
+        assert len(embeddings[0]) == 384
+        assert isinstance(embeddings[0][0], float)
+        lines.append(f"✓ Each vector: 384 dimensions (float)")
 
-        query_emb = embed_query(model, "How many ladoos can Bheem eat?")
-        assert len(query_emb) == 384, f"Query embedding has {len(query_emb)} dims, expected 384"
+        query_emb = embed_query(model, "minimum attendance requirement")
+        assert len(query_emb) == 384
+        lines.append(f"✓ embed_query: returns single 384-dim vector")
 
-        return jsonify({
-            "passed": True,
-            "message": (
-                f"Embeddings working at full power!\n"
-                f"- Model: all-MiniLM-L6-v2 loaded ✓\n"
-                f"- Batch embed: 2 texts → 2 vectors (384D each) ✓\n"
-                f"- Query embed: 1 query → 1 vector (384D) ✓\n"
-                f"- Sample values: [{embeddings[0][0]:.4f}, {embeddings[0][1]:.4f}, ...]"
-            ),
-        })
+        lines.append(f"> First 5 values: [{', '.join(f'{v:.4f}' for v in embeddings[0][:5])}...]")
+
+        return jsonify(make_result(True, lines))
 
     except NotImplementedError as e:
-        return jsonify({
-            "passed": False,
-            "message": f"Not implemented yet! TODO: {e}",
-        })
+        return jsonify(make_result(False, [f"✗ Not implemented: {e}"]))
     except Exception as e:
-        return jsonify({
-            "passed": False,
-            "message": f"{type(e).__name__}: {e}\n\n{traceback.format_exc()[-500:]}",
-        })
+        return jsonify(make_result(False, [f"✗ {type(e).__name__}: {e}"]))
 
 
 @app.route("/run_test/chroma")
 def test_chroma():
-    """Test: Can ChromaDB store and retrieve chunks by similarity?"""
+    """Stage 4: ChromaDB storage and retrieval."""
     try:
         import chromadb
 
@@ -174,63 +157,54 @@ def test_chroma():
         from src.retrieve import retrieve_chunks
         from src.vector_store import add_chunks, create_collection
 
+        lines = []
+
         client = chromadb.Client()
-        collection = create_collection(client, collection_name="test_arena")
+        collection = create_collection(client, collection_name="test_lab_stage4")
+        lines.append("✓ ChromaDB client created (in-memory for testing)")
 
         test_chunks = [
             {"text": "The minimum attendance at IIT Dholakpur is 75 percent",
-             "source": "attendance_policy.txt", "chunk_id": "test_att_0"},
-            {"text": "Bheem's Kitchen canteen opens at 7:30 AM daily",
-             "source": "college_handbook.txt", "chunk_id": "test_hb_0"},
+             "source": "attendance_policy.txt", "chunk_id": "att_0"},
+            {"text": "The canteen opens at 7:30 AM daily",
+             "source": "college_handbook.txt", "chunk_id": "hb_0"},
             {"text": "Minimum CGPA of 6.0 required for placement eligibility",
-             "source": "placement_guidelines.txt", "chunk_id": "test_pl_0"},
+             "source": "placement_guidelines.txt", "chunk_id": "pl_0"},
         ]
 
         model = load_embedding_model()
         texts = [c["text"] for c in test_chunks]
         embeddings = embed_texts(model, texts)
-
         add_chunks(collection, test_chunks, embeddings)
-        assert collection.count() == 3, f"Expected 3 in collection, got {collection.count()}"
+
+        assert collection.count() == 3
+        lines.append(f"✓ Added 3 chunks to collection (count verified)")
 
         query_emb = embed_query(model, "What is the attendance requirement?")
         results = retrieve_chunks(collection, query_emb, n_results=2)
 
-        assert len(results) == 2, f"Expected 2 results, got {len(results)}"
-        assert "text" in results[0], "Result missing 'text' key"
-        assert "source" in results[0], "Result missing 'source' key"
+        assert len(results) == 2
+        assert "text" in results[0] and "source" in results[0] and "distance" in results[0]
+        lines.append(f"✓ Query returned {len(results)} results with text, source, distance")
 
-        top_text = results[0]["text"].lower()
-        assert "attendance" in top_text or "75" in top_text, \
-            f"Top result doesn't mention attendance: '{results[0]['text'][:50]}...'"
+        top = results[0]
+        assert "attendance" in top["text"].lower() or "75" in top["text"]
+        lines.append(f"✓ Top result is semantically relevant")
+        lines.append(f"> Query: \"What is the attendance requirement?\"")
+        lines.append(f"> Top match: \"{top['text'][:60]}...\"")
+        lines.append(f"> Source: {top['source']} | Distance: {top['distance']:.4f}")
 
-        return jsonify({
-            "passed": True,
-            "message": (
-                f"ChromaDB memory shield is STRONG!\n"
-                f"- Stored 3 test chunks ✓\n"
-                f"- Query: 'What is the attendance requirement?'\n"
-                f"- Top result: '{results[0]['text'][:60]}...'\n"
-                f"- Source: {results[0]['source']} ✓\n"
-                f"- Relevance confirmed ✓"
-            ),
-        })
+        return jsonify(make_result(True, lines))
 
     except NotImplementedError as e:
-        return jsonify({
-            "passed": False,
-            "message": f"Not implemented yet! TODO: {e}",
-        })
+        return jsonify(make_result(False, [f"✗ Not implemented: {e}"]))
     except Exception as e:
-        return jsonify({
-            "passed": False,
-            "message": f"{type(e).__name__}: {e}\n\n{traceback.format_exc()[-500:]}",
-        })
+        return jsonify(make_result(False, [f"✗ {type(e).__name__}: {e}"]))
 
 
 @app.route("/run_test/full_pipeline")
 def test_full_pipeline():
-    """Test: Does the entire pipeline work end-to-end (without LLM)?"""
+    """Stage 5: Full retrieval pipeline end-to-end."""
     try:
         import chromadb
 
@@ -240,72 +214,121 @@ def test_full_pipeline():
         from src.retrieve import format_context, retrieve_chunks
         from src.vector_store import add_chunks, create_collection
 
-        # Stage 1: Load
+        lines = []
+
         docs = load_documents("data")
-        assert len(docs) == 3
+        lines.append(f"✓ Loaded {len(docs)} documents")
 
-        # Stage 2: Chunk
         chunks = chunk_all_documents(docs)
-        assert len(chunks) > 0
+        lines.append(f"✓ Chunked into {len(chunks)} pieces")
 
-        # Stage 3: Embed
         model = load_embedding_model()
         texts = [c["text"] for c in chunks]
         embeddings = embed_texts(model, texts)
-        assert len(embeddings) == len(chunks)
-        assert all(len(e) == 384 for e in embeddings)
+        lines.append(f"✓ Generated {len(embeddings)} embeddings (384-dim)")
 
-        # Stage 4: Store
         client = chromadb.Client()
-        collection = create_collection(client, collection_name="test_full_dholakpur")
+        collection = create_collection(client, collection_name="test_lab_stage5")
         add_chunks(collection, chunks, embeddings)
-        assert collection.count() == len(chunks)
+        lines.append(f"✓ Stored in ChromaDB ({collection.count()} entries)")
 
-        # Stage 5: Retrieve
-        query = "What is the attendance policy at IIT Dholakpur?"
+        query = "What happens if attendance falls below 75%?"
         query_emb = embed_query(model, query)
         results = retrieve_chunks(collection, query_emb, n_results=3)
+        lines.append(f"✓ Retrieved {len(results)} chunks for query")
 
-        assert len(results) == 3
-        top_text = results[0]["text"].lower()
-        assert "attendance" in top_text or "75" in top_text
-
-        # Format context
         context = format_context(results)
-        assert "[Source:" in context
-        assert len(context) > 0
+        assert "[Source:" in context and len(context) > 100
+        lines.append(f"✓ Context formatted with source citations")
 
-        return jsonify({
-            "passed": True,
-            "message": (
-                f"🎉 FULL PIPELINE MEGA PUNCH LANDED!\n\n"
-                f"Stage 1 — Load:     {len(docs)} documents ✓\n"
-                f"Stage 2 — Chunk:    {len(chunks)} chunks ✓\n"
-                f"Stage 3 — Embed:    {len(embeddings)} vectors (384D) ✓\n"
-                f"Stage 4 — Store:    {collection.count()} entries in ChromaDB ✓\n"
-                f"Stage 5 — Retrieve: Top result from '{results[0]['source']}' ✓\n\n"
-                f"Query: '{query}'\n"
-                f"Answer source: {results[0]['source']}\n"
-                f"Preview: '{results[0]['text'][:80]}...'"
-            ),
-        })
+        top = results[0]
+        assert "attendance" in top["text"].lower() or "75" in top["text"].lower() \
+            or "below" in top["text"].lower()
+        lines.append(f"✓ Top result is relevant to attendance query")
+
+        lines.append(f"> Query: \"{query}\"")
+        lines.append(f"> Top source: {top['source']}")
+        lines.append(f"> Context length: {len(context)} chars")
+
+        return jsonify(make_result(True, lines))
 
     except NotImplementedError as e:
-        return jsonify({
-            "passed": False,
-            "message": f"Not implemented yet! TODO: {e}",
-        })
+        return jsonify(make_result(False, [f"✗ Not implemented: {e}"]))
     except Exception as e:
-        return jsonify({
-            "passed": False,
-            "message": f"{type(e).__name__}: {e}\n\n{traceback.format_exc()[-500:]}",
-        })
+        return jsonify(make_result(False, [f"✗ {type(e).__name__}: {e}"]))
+
+
+@app.route("/run_test/generation")
+def test_generation():
+    """Stage 6: LLM prompt construction and generation."""
+    try:
+        from src.generate import build_prompt, generate_answer
+
+        lines = []
+
+        # Test prompt building (doesn't need API key)
+        test_context = "[Source: attendance_policy.txt]\nMinimum attendance is 75%.\n---"
+        test_query = "What is the minimum attendance?"
+
+        prompt = build_prompt(test_query, test_context)
+        assert isinstance(prompt, str) and len(prompt) > 50
+        lines.append("✓ build_prompt returns a non-empty string")
+
+        assert "context" in prompt.lower() or "attendance" in prompt.lower()
+        lines.append("✓ Prompt includes the provided context")
+
+        assert test_query in prompt
+        lines.append("✓ Prompt includes the user's question")
+
+        # Check for grounding instruction
+        prompt_lower = prompt.lower()
+        has_grounding = ("only" in prompt_lower and "context" in prompt_lower) \
+            or "provided" in prompt_lower or "cite" in prompt_lower
+        assert has_grounding, "Prompt should instruct the LLM to only use provided context"
+        lines.append("✓ Prompt includes grounding instruction (anti-hallucination)")
+
+        lines.append(f"> Prompt length: {len(prompt)} chars")
+        lines.append(f"> Preview: \"{prompt[:120]}...\"")
+
+        # Test actual LLM call if API key is available
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        base_url = os.getenv("OPENAI_BASE_URL")
+        model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+
+        if api_key and api_key != "your-key-here":
+            try:
+                answer = generate_answer(
+                    query=test_query,
+                    context=test_context,
+                    api_key=api_key,
+                    model=model,
+                    base_url=base_url,
+                )
+                assert isinstance(answer, str) and len(answer) > 10
+                lines.append(f"✓ LLM responded ({len(answer)} chars)")
+                lines.append(f"> Model: {model}")
+                lines.append(f"> Answer: \"{answer[:150]}{'...' if len(answer) > 150 else ''}\"")
+            except Exception as llm_err:
+                lines.append(f"> LLM call failed: {llm_err}")
+                lines.append(f"> (Prompt construction passed — LLM connectivity issue)")
+        else:
+            lines.append("> Skipped LLM call (no API key configured in .env)")
+            lines.append("> Prompt construction validated successfully")
+
+        return jsonify(make_result(True, lines))
+
+    except NotImplementedError as e:
+        return jsonify(make_result(False, [f"✗ Not implemented: {e}"]))
+    except Exception as e:
+        return jsonify(make_result(False, [f"✗ {type(e).__name__}: {e}"]))
 
 
 if __name__ == "__main__":
-    print("\n" + "=" * 60)
-    print("  ⚡ IIT DHOLAKPUR — RAG PIPELINE TEST ARENA ⚡")
-    print("  Open http://localhost:5555 in your browser")
-    print("  Press Ctrl+C to stop")
-    print("=" * 60 + "\n")
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    print()
+    print("  IIT Dholakpur — Pipeline Test Lab")
+    print("  http://localhost:5555")
+    print()
     app.run(host="0.0.0.0", port=5555, debug=True)

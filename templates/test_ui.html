@@ -3,854 +3,591 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IIT Dholakpur — RAG Pipeline Test Arena</title>
+    <title>IIT Dholakpur — Pipeline Test Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=Fredoka:wght@400;600;700&display=swap');
-
         :root {
-            --orange-primary: #FF6B35;
-            --orange-light: #FFA366;
-            --yellow-bright: #FFD700;
-            --yellow-light: #FFF3CD;
-            --green-success: #28a745;
-            --red-fail: #dc3545;
-            --blue-info: #4A90D9;
-            --purple-accent: #7B2D8B;
-            --bg-cream: #FFF8F0;
-            --panel-border: #2C1810;
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --surface-2: #242424;
+            --surface-3: #2e2e2e;
+            --border: #333;
+            --border-light: #444;
+            --text: #e8e8e8;
+            --text-muted: #888;
+            --text-dim: #666;
+            --accent: #f97316;
+            --accent-dim: rgba(249, 115, 22, 0.1);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.08);
+            --green-border: rgba(34, 197, 94, 0.3);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.08);
+            --red-border: rgba(239, 68, 68, 0.3);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.08);
+            --yellow: #eab308;
+            --radius: 12px;
+            --radius-sm: 8px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Comic Neue', cursive;
-            background: var(--bg-cream);
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(123, 45, 139, 0.05) 0%, transparent 50%);
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
             min-height: 100vh;
-            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout */
+        .layout {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
         }
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, var(--orange-primary), var(--purple-accent));
-            padding: 1.5rem 2rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            margin-bottom: 3rem;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(255,255,255,0.03) 10px,
-                rgba(255,255,255,0.03) 20px
-            );
-            animation: moveStripes 20s linear infinite;
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
 
-        @keyframes moveStripes {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(28px, 28px); }
+        .header-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .header h1 {
-            font-family: 'Bangers', cursive;
-            color: white;
-            font-size: 2.8rem;
-            text-shadow: 3px 3px 0 rgba(0,0,0,0.3), -1px -1px 0 rgba(0,0,0,0.1);
-            position: relative;
-            letter-spacing: 2px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text);
         }
 
         .header p {
-            color: rgba(255,255,255,0.9);
-            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
             margin-top: 0.5rem;
-            position: relative;
-            font-weight: 700;
+            max-width: 600px;
         }
 
-        /* Main Content */
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        /* Comic Panel Layout */
-        .comic-intro {
+        /* Intro Card */
+        .intro-card {
             display: flex;
             align-items: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            background: white;
-            border: 4px solid var(--panel-border);
-            border-radius: 16px;
+            gap: 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             padding: 1.5rem;
-            box-shadow: 6px 6px 0 var(--panel-border);
-            position: relative;
+            margin-bottom: 2rem;
         }
 
-        .comic-intro::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 30px;
-            height: 30px;
-            background: var(--yellow-bright);
-            border-radius: 50%;
-            opacity: 0.6;
-        }
-
-        .bheem-avatar {
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
-            border: 4px solid var(--orange-primary);
+        .intro-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-sm);
             object-fit: cover;
             flex-shrink: 0;
-            animation: float 3s ease-in-out infinite;
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+            border: 2px solid var(--border);
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
+        .intro-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.7;
         }
 
-        .speech-bubble {
-            background: white;
-            border: 3px solid var(--panel-border);
-            border-radius: 20px;
-            padding: 1.2rem 1.5rem;
-            position: relative;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+        .intro-text strong {
+            color: var(--text);
         }
 
-        .speech-bubble::before {
-            content: '';
-            position: absolute;
-            left: -20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-top: 12px solid transparent;
-            border-bottom: 12px solid transparent;
-            border-right: 20px solid var(--panel-border);
-        }
-
-        .speech-bubble::after {
-            content: '';
-            position: absolute;
-            left: -14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
-            border-right: 17px solid white;
-        }
-
-        /* Control Panel */
-        .control-panel {
-            text-align: center;
-            margin-bottom: 2rem;
+        /* Run Button */
+        .actions {
+            margin-bottom: 2.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
         }
 
         .run-btn {
-            font-family: 'Bangers', cursive;
-            font-size: 1.6rem;
-            padding: 1rem 3rem;
-            background: linear-gradient(135deg, var(--orange-primary), #FF8C42);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.7rem 1.8rem;
+            background: var(--accent);
             color: white;
-            border: 4px solid var(--panel-border);
-            border-radius: 50px;
+            border: none;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            box-shadow: 4px 4px 0 var(--panel-border);
             transition: all 0.15s ease;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
+            letter-spacing: 0.2px;
         }
 
-        .run-btn:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0 var(--panel-border);
+        .run-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .run-btn:active { transform: translateY(0); }
+        .run-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .run-status {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        .run-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0 var(--panel-border);
-        }
-
-        .run-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .run-btn .btn-icon {
-            margin-right: 8px;
-        }
-
-        /* Progress Section */
-        .progress-section {
+        /* Progress */
+        .progress-bar {
             margin-bottom: 2rem;
             display: none;
         }
 
-        .progress-section.active {
-            display: block;
-            animation: slideDown 0.4s ease;
-        }
+        .progress-bar.active { display: block; }
 
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .ladoo-progress {
-            background: white;
-            border: 3px solid var(--panel-border);
-            border-radius: 30px;
-            padding: 8px;
-            height: 50px;
-            position: relative;
+        .progress-track {
+            height: 3px;
+            background: var(--surface-2);
+            border-radius: 2px;
             overflow: hidden;
-            box-shadow: inset 0 3px 8px rgba(0,0,0,0.1);
         }
 
-        .ladoo-fill {
+        .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--yellow-bright), var(--orange-light), var(--orange-primary));
-            border-radius: 22px;
+            background: var(--accent);
             width: 0%;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            transition: width 0.5s ease;
+            border-radius: 2px;
+        }
+
+        .progress-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Test List */
+        .test-list {
             display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 10px;
+            flex-direction: column;
+            gap: 1rem;
         }
 
-        .ladoo-fill::after {
-            content: '🍪';
-            font-size: 1.4rem;
-            animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .progress-text {
-            text-align: center;
-            margin-top: 0.8rem;
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--panel-border);
-        }
-
-        /* Test Cards */
-        .test-grid {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .test-card {
-            background: white;
-            border: 3px solid var(--panel-border);
-            border-radius: 16px;
+        .test-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateX(-30px);
+            transition: border-color 0.3s ease, background 0.3s ease;
         }
 
-        .test-card.visible {
-            opacity: 1;
-            transform: translateX(0);
+        .test-item.passed {
+            border-color: var(--green-border);
+            background: var(--green-dim);
         }
 
-        .test-card.passed {
-            border-color: var(--green-success);
-            box-shadow: 4px 4px 0 rgba(40, 167, 69, 0.3);
+        .test-item.failed {
+            border-color: var(--red-border);
+            background: var(--red-dim);
         }
 
-        .test-card.failed {
-            border-color: var(--red-fail);
-            box-shadow: 4px 4px 0 rgba(220, 53, 69, 0.3);
-            animation: shake 0.5s ease;
+        .test-item.running {
+            border-color: rgba(59, 130, 246, 0.4);
+            background: var(--blue-dim);
         }
 
-        .test-card.running {
-            border-color: var(--blue-info);
-            animation: pulse 1.5s ease infinite;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { box-shadow: 4px 4px 0 rgba(74, 144, 217, 0.3); }
-            50% { box-shadow: 4px 4px 15px rgba(74, 144, 217, 0.5); }
-        }
-
-        .test-card-header {
-            padding: 1rem 1.5rem;
+        .test-item-header {
+            padding: 1rem 1.25rem;
             display: flex;
             align-items: center;
             gap: 1rem;
-            border-bottom: 2px solid #eee;
+            cursor: pointer;
+            user-select: none;
         }
 
-        .test-number {
-            font-family: 'Bangers', cursive;
-            font-size: 1.8rem;
-            width: 50px;
-            height: 50px;
+        .test-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background: var(--yellow-light);
-            border: 3px solid var(--panel-border);
+            background: var(--surface-3);
             flex-shrink: 0;
         }
 
-        .test-card.passed .test-number {
-            background: #d4edda;
-            border-color: var(--green-success);
-        }
+        .test-item.passed .test-num { background: var(--green); color: white; }
+        .test-item.failed .test-num { background: var(--red); color: white; }
+        .test-item.running .test-num { background: var(--blue); color: white; }
 
-        .test-card.failed .test-number {
-            background: #f8d7da;
-            border-color: var(--red-fail);
-        }
+        .test-info { flex: 1; }
 
-        .test-card.running .test-number {
-            background: #d1ecf1;
-            border-color: var(--blue-info);
-            animation: spin 2s linear infinite;
-        }
-
-        .test-title {
-            font-family: 'Fredoka', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--panel-border);
-        }
-
-        .test-subtitle {
+        .test-name {
             font-size: 0.9rem;
-            color: #666;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .test-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
             margin-top: 2px;
         }
 
-        .test-status-icon {
-            margin-left: auto;
-            font-size: 2rem;
+        .test-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
-        .test-card-body {
-            padding: 1rem 1.5rem;
-        }
+        .test-item.passed .test-status { color: var(--green); background: rgba(34,197,94,0.1); }
+        .test-item.failed .test-status { color: var(--red); background: rgba(239,68,68,0.1); }
+        .test-item.running .test-status { color: var(--blue); background: rgba(59,130,246,0.1); }
+        .test-status.idle { color: var(--text-dim); }
 
-        .test-question {
-            background: var(--yellow-light);
-            border: 2px dashed var(--orange-light);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            font-style: italic;
-            position: relative;
-        }
-
-        .test-question::before {
-            content: '💬';
-            position: absolute;
-            top: -12px;
-            left: 12px;
-            font-size: 1.2rem;
-        }
-
-        .test-result {
-            padding: 0.8rem 1rem;
-            border-radius: 10px;
-            font-size: 0.95rem;
+        /* Test Output */
+        .test-output {
             display: none;
+            border-top: 1px solid var(--border);
+            padding: 1rem 1.25rem;
         }
 
-        .test-result.show {
-            display: block;
-            animation: fadeIn 0.4s ease;
-        }
+        .test-output.show { display: block; animation: fadeIn 0.2s ease; }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .test-result.success {
-            background: #d4edda;
-            border: 2px solid var(--green-success);
-            color: #155724;
-        }
-
-        .test-result.error {
-            background: #f8d7da;
-            border: 2px solid var(--red-fail);
-            color: #721c24;
-        }
-
-        .test-result pre {
-            margin-top: 0.5rem;
-            font-size: 0.85rem;
+        .output-block {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            overflow-x: auto;
             white-space: pre-wrap;
             word-break: break-word;
-            font-family: 'Courier New', monospace;
-            background: rgba(0,0,0,0.05);
-            padding: 0.5rem;
-            border-radius: 6px;
         }
 
-        /* Score Board */
-        .scoreboard {
+        .output-block .line-pass { color: var(--green); }
+        .output-block .line-fail { color: var(--red); }
+        .output-block .line-info { color: var(--text); }
+        .output-block .line-dim { color: var(--text-dim); }
+
+        /* Summary */
+        .summary {
+            margin-top: 2.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
             display: none;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border: 4px solid var(--yellow-bright);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-top: 2rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
         }
 
-        .scoreboard.active {
-            display: block;
-            animation: zoomIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .summary.active { display: block; animation: fadeIn 0.4s ease; }
 
-        @keyframes zoomIn {
-            from { opacity: 0; transform: scale(0.5); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .scoreboard h2 {
-            font-family: 'Bangers', cursive;
-            color: var(--yellow-bright);
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .score-display {
-            font-family: 'Bangers', cursive;
-            font-size: 4rem;
-            color: white;
-            margin: 1rem 0;
-        }
-
-        .score-display .passed-count {
-            color: var(--green-success);
-        }
-
-        .score-display .total-count {
-            color: var(--orange-light);
-        }
-
-        .score-message {
-            font-size: 1.3rem;
-            color: rgba(255,255,255,0.9);
-            margin-top: 1rem;
-            font-weight: 700;
-        }
-
-        .score-ladoos {
-            font-size: 2rem;
-            margin-top: 1rem;
-            animation: bounce 1s ease infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* Confetti */
-        .confetti-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9999;
-            overflow: hidden;
-        }
-
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            top: -10px;
-            animation: confettiFall 3s linear forwards;
-        }
-
-        @keyframes confettiFall {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-
-        /* Comic Action Words */
-        .action-word {
-            position: fixed;
-            font-family: 'Bangers', cursive;
+        .summary-score {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 3rem;
-            color: var(--orange-primary);
-            text-shadow: 2px 2px 0 var(--panel-border);
-            pointer-events: none;
-            z-index: 100;
-            animation: popAndFade 1s ease forwards;
+            font-weight: 800;
+            margin: 0.5rem 0;
         }
 
-        @keyframes popAndFade {
-            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
-            50% { transform: scale(1.3) rotate(5deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0deg); opacity: 0; }
+        .summary-score .pass-num { color: var(--green); }
+        .summary-score .divider { color: var(--text-dim); }
+        .summary-score .total-num { color: var(--text-muted); }
+
+        .summary-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
+        .summary-msg {
+            margin-top: 1rem;
             font-size: 0.9rem;
+            color: var(--text-muted);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .footer a {
-            color: var(--orange-primary);
-            text-decoration: none;
-            font-weight: 700;
+        .summary.all-passed { border-color: var(--green-border); }
+        .summary.all-passed .summary-label { color: var(--green); }
+
+        /* Spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
         }
 
         /* Responsive */
-        @media (max-width: 768px) {
-            .comic-intro {
-                flex-direction: column;
-                text-align: center;
-            }
-            .speech-bubble::before, .speech-bubble::after {
-                display: none;
-            }
-            .header h1 { font-size: 2rem; }
-            .bheem-avatar { width: 120px; height: 120px; }
+        @media (max-width: 640px) {
+            .layout { padding: 2rem 1rem; }
+            .header h1 { font-size: 1.4rem; }
+            .intro-card { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <div class="confetti-container" id="confettiContainer"></div>
+    <div class="layout">
+        <header class="header">
+            <div class="header-top">
+                <span class="header-badge">Workshop</span>
+            </div>
+            <h1>IIT Dholakpur — Pipeline Test Lab</h1>
+            <p>Verify each stage of your RAG pipeline. Tests run sequentially — fix failures top-down.</p>
+        </header>
 
-    <header class="header">
-        <h1>⚡ IIT DHOLAKPUR — TEST ARENA ⚡</h1>
-        <p>Bheem's RAG Pipeline Strength Test</p>
-    </header>
-
-    <main class="container">
-        <!-- Comic Intro Panel -->
-        <div class="comic-intro">
-            <img src="/static/images/bheem_helpdesk.png" alt="Bheem at IIT Dholakpur" class="bheem-avatar">
-            <div class="speech-bubble">
-                <strong>Bheem says:</strong> "Welcome to the Test Arena, warrior! 💪 
-                Just like I test my strength against every challenge in Dholakpur, 
-                you must test your RAG pipeline against these challenges. 
-                Hit the button below and let's see if your code has the strength of a hundred elephants!"
+        <div class="intro-card">
+            <img src="/static/images/bheem_helpdesk.png" alt="IITD Helpdesk" class="intro-avatar">
+            <div class="intro-text">
+                <strong>How this works:</strong> Each test validates one stage of the pipeline.
+                They run in order — document loading, chunking, embeddings, vector storage,
+                retrieval, and finally LLM generation. A failing test likely means the 
+                corresponding TODO in <code>src/</code> hasn't been implemented yet.
             </div>
         </div>
 
-        <!-- Run Button -->
-        <div class="control-panel">
-            <button class="run-btn" id="runBtn" onclick="runAllTests()">
-                <span class="btn-icon">🏋️</span> RUN ALL TESTS!
-            </button>
+        <div class="actions">
+            <button class="run-btn" id="runBtn" onclick="runAllTests()">Run All Tests</button>
+            <span class="run-status" id="runStatus"></span>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="progress-section" id="progressSection">
-            <div class="ladoo-progress">
-                <div class="ladoo-fill" id="ladooFill"></div>
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div class="progress-text" id="progressText">Preparing the arena...</div>
+            <div class="progress-label" id="progressLabel"></div>
         </div>
 
-        <!-- Test Cards -->
-        <div class="test-grid" id="testGrid">
-            <!-- Cards populated by JS -->
-        </div>
+        <div class="test-list" id="testList"></div>
 
-        <!-- Scoreboard -->
-        <div class="scoreboard" id="scoreboard">
-            <h2>🏆 FINAL SCORE 🏆</h2>
-            <div class="score-display">
-                <span class="passed-count" id="passedCount">0</span>
-                /
-                <span class="total-count" id="totalCount">0</span>
+        <div class="summary" id="summary">
+            <div class="summary-label" id="summaryLabel">Results</div>
+            <div class="summary-score">
+                <span class="pass-num" id="passNum">0</span>
+                <span class="divider">/</span>
+                <span class="total-num" id="totalNum">0</span>
             </div>
-            <div class="score-message" id="scoreMessage"></div>
-            <div class="score-ladoos" id="scoreLadoos"></div>
+            <div class="summary-msg" id="summaryMsg"></div>
         </div>
-    </main>
-
-    <footer class="footer">
-        Built with 💪 at <a href="#">IIT Dholakpur</a> | 
-        Powered by the strength of ladoos 🍪
-    </footer>
+    </div>
 
     <script>
         const TESTS = [
             {
-                id: "test_load_documents",
-                number: 1,
-                title: "Document Loading Strength",
-                subtitle: "Can you lift all 3 documents off the shelf?",
-                question: "Bheem needs to pick up all 3 college documents from the data/ folder. Does load_documents() return a dict with 3 entries, each with a .txt key and non-empty string value?",
+                id: "load_documents",
+                name: "Document Loading",
+                desc: "Read .txt files from data/ into a dictionary",
                 endpoint: "/run_test/load_documents"
             },
             {
-                id: "test_chunking",
-                number: 2,
-                title: "Chunking Power Chop",
-                subtitle: "Split documents like Bheem splits logs!",
-                question: "Can your chunking function break a 600-character text into overlapping pieces? The last 50 chars of chunk[0] should appear at the start of chunk[1] — like links in Bheem's chain!",
+                id: "chunking",
+                name: "Text Chunking",
+                desc: "Split documents into overlapping character windows",
                 endpoint: "/run_test/chunking"
             },
             {
-                id: "test_embeddings",
-                number: 3,
-                title: "Embedding Brain Power",
-                subtitle: "384 dimensions of pure intelligence",
-                question: "Does your embedding model produce 384-dimensional vectors? Each text must become a list of exactly 384 floats — that's the magic number for MiniLM, Bheem's favourite model!",
+                id: "embeddings",
+                name: "Embedding Generation",
+                desc: "Convert text chunks into 384-dim vectors",
                 endpoint: "/run_test/embeddings"
             },
             {
-                id: "test_chroma",
-                number: 4,
-                title: "ChromaDB Memory Shield",
-                subtitle: "Store it, search it, find it!",
-                question: "Can ChromaDB store chunks and retrieve the right one? If Bheem stores info about attendance and then asks about it, the attendance chunk should come back on top!",
+                id: "chroma",
+                name: "Vector Storage",
+                desc: "Store and retrieve from ChromaDB by similarity",
                 endpoint: "/run_test/chroma"
             },
             {
-                id: "test_full_pipeline",
-                number: 5,
-                title: "FULL PIPELINE MEGA PUNCH",
-                subtitle: "The ultimate test — all stages combined!",
-                question: "Load → Chunk → Embed → Store → Retrieve. Does the entire pipeline work end-to-end? When you ask 'What is the attendance policy?', do you get a relevant chunk back from Dholakpur's documents?",
+                id: "retrieval",
+                name: "Retrieval Pipeline",
+                desc: "End-to-end: load, chunk, embed, store, and query",
                 endpoint: "/run_test/full_pipeline"
+            },
+            {
+                id: "generation",
+                name: "LLM Generation",
+                desc: "Build prompt from context and call the language model",
+                endpoint: "/run_test/generation"
             }
         ];
 
-        const ACTION_WORDS = ['POW!', 'WHAM!', 'BOOM!', 'ZAP!', 'CRACK!', 'SMASH!'];
-        const PASS_MESSAGES = ['LADOO TIME! 🍪', 'BHEEM APPROVES! 💪', 'DHOLAKPUR PROUD! 🏆', 'SUPER STRENGTH! ⚡', 'RAJA CLAPS! 👏'];
-        const FAIL_MESSAGES = ['Kalia would laugh... 😅', 'Try again, warrior!', 'Even Bheem fails sometimes!', 'Tuntun Mausi believes in you!'];
-
-        function createTestCards() {
-            const grid = document.getElementById('testGrid');
-            grid.innerHTML = TESTS.map(test => `
-                <div class="test-card" id="card-${test.id}">
-                    <div class="test-card-header">
-                        <div class="test-number">${test.number}</div>
-                        <div>
-                            <div class="test-title">${test.title}</div>
-                            <div class="test-subtitle">${test.subtitle}</div>
+        function renderTests() {
+            const list = document.getElementById('testList');
+            list.innerHTML = TESTS.map((t, i) => `
+                <div class="test-item" id="item-${t.id}">
+                    <div class="test-item-header" onclick="toggleOutput('${t.id}')">
+                        <div class="test-num">${i + 1}</div>
+                        <div class="test-info">
+                            <div class="test-name">${t.name}</div>
+                            <div class="test-desc">${t.desc}</div>
                         </div>
-                        <div class="test-status-icon" id="icon-${test.id}">⏳</div>
+                        <span class="test-status idle" id="status-${t.id}">waiting</span>
                     </div>
-                    <div class="test-card-body">
-                        <div class="test-question">${test.question}</div>
-                        <div class="test-result" id="result-${test.id}"></div>
+                    <div class="test-output" id="output-${t.id}">
+                        <div class="output-block" id="block-${t.id}"></div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function showActionWord(x, y) {
-            const word = ACTION_WORDS[Math.floor(Math.random() * ACTION_WORDS.length)];
-            const el = document.createElement('div');
-            el.className = 'action-word';
-            el.textContent = word;
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1000);
+        function toggleOutput(id) {
+            const el = document.getElementById(`output-${id}`);
+            el.classList.toggle('show');
         }
 
-        function showConfetti() {
-            const container = document.getElementById('confettiContainer');
-            const colors = ['#FF6B35', '#FFD700', '#28a745', '#7B2D8B', '#4A90D9', '#FF69B4'];
-            for (let i = 0; i < 80; i++) {
-                setTimeout(() => {
-                    const confetti = document.createElement('div');
-                    confetti.className = 'confetti';
-                    confetti.style.left = Math.random() * 100 + '%';
-                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-                    confetti.style.width = (Math.random() * 10 + 5) + 'px';
-                    confetti.style.height = (Math.random() * 10 + 5) + 'px';
-                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
-                    container.appendChild(confetti);
-                    setTimeout(() => confetti.remove(), 4000);
-                }, i * 30);
+        function setTestState(id, state, outputHtml) {
+            const item = document.getElementById(`item-${id}`);
+            const status = document.getElementById(`status-${id}`);
+            const output = document.getElementById(`output-${id}`);
+            const block = document.getElementById(`block-${id}`);
+
+            item.className = `test-item ${state}`;
+
+            if (state === 'running') {
+                status.innerHTML = '<span class="spinner"></span>';
+            } else if (state === 'passed') {
+                status.textContent = 'passed';
+            } else if (state === 'failed') {
+                status.textContent = 'failed';
+            }
+
+            if (outputHtml) {
+                block.innerHTML = outputHtml;
+                output.classList.add('show');
             }
         }
 
-        async function runSingleTest(test, index) {
-            const card = document.getElementById(`card-${test.id}`);
-            const icon = document.getElementById(`icon-${test.id}`);
-            const result = document.getElementById(`result-${test.id}`);
-
-            // Show card with animation
-            setTimeout(() => card.classList.add('visible'), index * 200);
-
-            // Wait for card to be visible before running
-            await new Promise(r => setTimeout(r, index * 800 + 400));
-
-            // Set running state
-            card.className = 'test-card visible running';
-            icon.textContent = '🔄';
-
-            try {
-                const response = await fetch(test.endpoint);
-                const data = await response.json();
-
-                if (data.passed) {
-                    card.className = 'test-card visible passed';
-                    icon.textContent = '✅';
-                    result.className = 'test-result success show';
-                    result.innerHTML = `
-                        <strong>${PASS_MESSAGES[Math.floor(Math.random() * PASS_MESSAGES.length)]}</strong>
-                        <pre>${data.message}</pre>
-                    `;
-                    // Show action word near the card
-                    const rect = card.getBoundingClientRect();
-                    showActionWord(rect.right - 80, rect.top + 20);
-                    return true;
-                } else {
-                    card.className = 'test-card visible failed';
-                    icon.textContent = '❌';
-                    result.className = 'test-result error show';
-                    result.innerHTML = `
-                        <strong>${FAIL_MESSAGES[Math.floor(Math.random() * FAIL_MESSAGES.length)]}</strong>
-                        <pre>${data.message}</pre>
-                    `;
-                    return false;
-                }
-            } catch (err) {
-                card.className = 'test-card visible failed';
-                icon.textContent = '💥';
-                result.className = 'test-result error show';
-                result.innerHTML = `
-                    <strong>Connection failed!</strong>
-                    <pre>${err.message}</pre>
-                `;
-                return false;
+        function formatOutput(data) {
+            if (data.passed) {
+                return data.output.map(line => {
+                    if (line.startsWith('✓')) return `<span class="line-pass">${esc(line)}</span>`;
+                    if (line.startsWith('>')) return `<span class="line-info">${esc(line)}</span>`;
+                    return `<span class="line-dim">${esc(line)}</span>`;
+                }).join('\n');
+            } else {
+                return data.output.map(line => {
+                    if (line.startsWith('✗') || line.startsWith('Error')) return `<span class="line-fail">${esc(line)}</span>`;
+                    return `<span class="line-dim">${esc(line)}</span>`;
+                }).join('\n');
             }
+        }
+
+        function esc(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         }
 
         async function runAllTests() {
             const btn = document.getElementById('runBtn');
-            const progress = document.getElementById('progressSection');
-            const fill = document.getElementById('ladooFill');
-            const progressText = document.getElementById('progressText');
-            const scoreboard = document.getElementById('scoreboard');
+            const bar = document.getElementById('progressBar');
+            const fill = document.getElementById('progressFill');
+            const label = document.getElementById('progressLabel');
+            const statusEl = document.getElementById('runStatus');
+            const summary = document.getElementById('summary');
 
-            // Reset
             btn.disabled = true;
-            btn.innerHTML = '<span class="btn-icon">⚡</span> TESTING IN PROGRESS...';
-            progress.classList.add('active');
-            scoreboard.classList.remove('active');
+            bar.classList.add('active');
+            summary.classList.remove('active', 'all-passed');
             fill.style.width = '0%';
-            createTestCards();
+            renderTests();
 
             let passed = 0;
             const total = TESTS.length;
+            const startTime = Date.now();
 
-            for (let i = 0; i < TESTS.length; i++) {
-                progressText.textContent = `Running Test ${i + 1}/${total}: ${TESTS[i].title}...`;
-                fill.style.width = ((i) / total * 100) + '%';
+            for (let i = 0; i < total; i++) {
+                const test = TESTS[i];
+                label.textContent = `Running ${i + 1}/${total} — ${test.name}`;
+                fill.style.width = `${(i / total) * 100}%`;
+                setTestState(test.id, 'running', null);
 
-                const result = await runSingleTest(TESTS[i], i);
-                if (result) passed++;
+                try {
+                    const res = await fetch(test.endpoint);
+                    const data = await res.json();
+                    const html = formatOutput(data);
 
-                fill.style.width = ((i + 1) / total * 100) + '%';
-                await new Promise(r => setTimeout(r, 300));
+                    if (data.passed) {
+                        setTestState(test.id, 'passed', html);
+                        passed++;
+                    } else {
+                        setTestState(test.id, 'failed', html);
+                    }
+                } catch (err) {
+                    setTestState(test.id, 'failed', `<span class="line-fail">Network error: ${esc(err.message)}</span>`);
+                }
+
+                fill.style.width = `${((i + 1) / total) * 100}%`;
+                await new Promise(r => setTimeout(r, 200));
             }
 
-            // Show final score
-            progressText.textContent = 'All tests complete!';
-            fill.style.width = '100%';
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            label.textContent = `Completed in ${elapsed}s`;
+            statusEl.textContent = `${passed}/${total} passed`;
 
-            await new Promise(r => setTimeout(r, 800));
-
-            // Scoreboard
-            document.getElementById('passedCount').textContent = passed;
-            document.getElementById('totalCount').textContent = total;
-            scoreboard.classList.add('active');
-
-            const ladooCount = passed;
-            document.getElementById('scoreLadoos').textContent = '🍪'.repeat(ladooCount) || '😢';
+            // Summary
+            document.getElementById('passNum').textContent = passed;
+            document.getElementById('totalNum').textContent = total;
+            const summaryEl = document.getElementById('summary');
+            const summaryLabel = document.getElementById('summaryLabel');
+            const summaryMsg = document.getElementById('summaryMsg');
 
             if (passed === total) {
-                document.getElementById('scoreMessage').textContent = 
-                    "PERFECT SCORE! You have the strength of Bheem himself! Tuntun Mausi is sending a lifetime supply of ladoos!";
-                showConfetti();
-            } else if (passed >= 3) {
-                document.getElementById('scoreMessage').textContent = 
-                    "Good effort, warrior! A few more pushups and you'll be ready. Bheem believes in you!";
+                summaryEl.classList.add('all-passed');
+                summaryLabel.textContent = 'All tests passing';
+                summaryMsg.textContent = 'Your pipeline is complete. Run python src/app.py --build to index, then ask questions.';
+            } else if (passed === 0) {
+                summaryLabel.textContent = 'No tests passing';
+                summaryMsg.textContent = 'Start with src/load_docs.py and work your way down. Each file builds on the one before it.';
             } else {
-                document.getElementById('scoreMessage').textContent = 
-                    "The journey has just begun! Even Bheem had to train. Go back and fill in those TODOs!";
+                summaryLabel.textContent = 'Partially complete';
+                summaryMsg.textContent = `${total - passed} stage${total - passed > 1 ? 's' : ''} still need implementation. Check the failed tests above for details.`;
             }
 
+            summaryEl.classList.add('active');
             btn.disabled = false;
-            btn.innerHTML = '<span class="btn-icon">🔄</span> RUN AGAIN!';
         }
 
-        // Initialize
-        createTestCards();
-        // Make cards visible initially (without running)
-        setTimeout(() => {
-            document.querySelectorAll('.test-card').forEach((card, i) => {
-                setTimeout(() => card.classList.add('visible'), i * 150);
-            });
-        }, 500);
+        renderTests();
     </script>
 </body>
 </html>

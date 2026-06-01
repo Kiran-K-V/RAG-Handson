@@ -6,11 +6,9 @@ ELIGIBILITY CRITERIA
 To be eligible for campus placements, a student must satisfy ALL of the following:
   1. Minimum CGPA of 6.0 (on a 10-point scale) at the time of registration.
   2. No active backlog (failed subject) at the time of the placement drive.
-     Students with cleared backlogs are eligible — everyone deserves a second chance,
-     as the Raja always says.
+     Students with cleared backlogs are eligible.
   3. Minimum 75% attendance in the current semester.
   4. No pending disciplinary action from the Dean of Students office.
-  5. Must have completed the mandatory "Dholakpur Values & Ethics" course (DV101).
 
 Students who have accepted a Pre-Placement Offer (PPO) from an internship company
 are not eligible to sit for other companies unless the PPO is formally declined in
@@ -20,15 +18,13 @@ REGISTRATION PROCESS
 --------------------
   - Registration opens: August 1 (via the Placement Portal at placement.iitdholakpur.ac.in)
   - Registration deadline: August 20
-  - Document verification: August 21–25 (at the Placement Office, ground floor,
-    Administrative Block — opposite the ladoo vending machine)
+  - Document verification: August 21–25
   - Placement season begins: September 1
 
 Students must upload the following during registration: updated resume (max 1 page),
 passport-size photograph, consolidated marksheet, and links to coding profiles
 (LeetCode, GitHub, or equivalent). Resume must be formatted using the official IITD
-template (available on the portal). Resumes mentioning "ladoo-eating champion" under
-achievements will not be rejected but are not encouraged.
+template available on the portal.
 
 COMPANY TIERS
 -------------
@@ -38,8 +34,7 @@ Companies are classified into three tiers based on CTC (Cost to Company):
   - Dream: CTC between ₹8 LPA and ₹25 LPA. Once a Dream offer is accepted, the
     student is removed from the Dream pool but may still sit for Super Dream.
   - Super Dream: CTC above ₹25 LPA. Once a Super Dream offer is accepted, the
-    student is removed from all placement pools. The Raja personally congratulates
-    Super Dream recipients at the annual convocation.
+    student is removed from all placement pools.
 
 A student may hold at most one offer at any time. If a higher-tier offer is received,
 the lower-tier offer is automatically released.
@@ -52,20 +47,16 @@ PLACEMENT TIMELINE
   - Day 0 (October 1): Super Dream companies only.
   - Day 1 (October 2): Dream companies.
   - Day 2 onwards: Mass Recruiters and remaining companies.
-  - Dholakpur Tech Summit (mid-October): Special hiring event with startups
-    from the Dholakpur Innovation Valley.
 
 WHAT STUDENTS MUST PREPARE
 ---------------------------
   - Resume: Single page, peer-reviewed, approved by the Placement Cell.
   - Coding Profiles: Active profiles on LeetCode (minimum 150 problems solved),
-    GitHub with at least 3 public repositories. HackerRank profile optional.
+    GitHub with at least 3 public repositories.
   - Core Subjects: Data Structures, Algorithms, OS, DBMS, Computer Networks.
   - Aptitude: Quantitative aptitude, logical reasoning, verbal ability.
   - Communication: Group discussion and HR interview preparation. The Placement
-    Cell conducts free mock GD sessions every Saturday at Bheem Auditorium.
-  - Strength Assessment: Optional but recommended — the Dholakpur Physical
-    Fitness Test (DPFT) score is valued by defence and sports companies.
+    Cell conducts free mock GD sessions every Saturday.
 
 OFF-CAMPUS PLACEMENTS
 ---------------------
@@ -73,17 +64,14 @@ Students may pursue off-campus placements at any time. However, they must inform
 the Placement Cell before accepting an off-campus offer. Off-campus offers count
 towards tier restrictions — a student who accepts an off-campus Dream offer cannot
 sit for on-campus Dream companies. Off-campus companies must be verified by the
-Placement Cell to ensure they are legitimate (after the Kirmada Corp incident
-of 2019, this verification is mandatory).
+Placement Cell to ensure legitimacy.
 
 PRE-PLACEMENT TALKS AND TEST FORMAT
 ------------------------------------
 Companies conduct a 45-minute PPT before their recruitment process. Attendance at
 the PPT is mandatory for students who wish to appear for that company's selection
-process. PPTs are held at the Bheem Auditorium (capacity 800) or the Chutki
-Seminar Hall (capacity 200). Tests are typically conducted on HackerEarth or
-HackerRank platforms and last 60–90 minutes. Refreshments (including ladoos) are
-provided during all PPTs courtesy of the Tuntun Mausi Foundation.
+process. Tests are typically conducted on HackerEarth or HackerRank platforms and
+last 60–90 minutes.
 
 For queries: placement@iitdholakpur.ac.in | Training & Placement Office, Ground
 Floor, Administrative Block | Ext. 2400.
