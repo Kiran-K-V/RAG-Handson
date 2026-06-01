@@ -290,30 +290,28 @@ def test_generation():
         lines.append(f"> Prompt length: {len(prompt)} chars")
         lines.append(f"> Preview: \"{prompt[:120]}...\"")
 
-        # Test actual LLM call if API key is available
+        # LLM call is required — this test must verify end-to-end generation
         api_key = os.getenv("OPENAI_API_KEY", "")
         base_url = os.getenv("OPENAI_BASE_URL")
         model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 
-        if api_key and api_key != "your-key-here":
-            try:
-                answer = generate_answer(
-                    query=test_query,
-                    context=test_context,
-                    api_key=api_key,
-                    model=model,
-                    base_url=base_url,
-                )
-                assert isinstance(answer, str) and len(answer) > 10
-                lines.append(f"✓ LLM responded ({len(answer)} chars)")
-                lines.append(f"> Model: {model}")
-                lines.append(f"> Answer: \"{answer[:150]}{'...' if len(answer) > 150 else ''}\"")
-            except Exception as llm_err:
-                lines.append(f"> LLM call failed: {llm_err}")
-                lines.append(f"> (Prompt construction passed — LLM connectivity issue)")
-        else:
-            lines.append("> Skipped LLM call (no API key configured in .env)")
-            lines.append("> Prompt construction validated successfully")
+        if not api_key or api_key == "your-key-here":
+            lines.append("✗ No API key configured")
+            lines.append("> Set OPENAI_API_KEY in your .env file")
+            lines.append("> Or configure Ollama: OPENAI_BASE_URL=http://localhost:11434/v1")
+            return jsonify(make_result(False, lines))
+
+        answer = generate_answer(
+            query=test_query,
+            context=test_context,
+            api_key=api_key,
+            model=model,
+            base_url=base_url,
+        )
+        assert isinstance(answer, str) and len(answer) > 10
+        lines.append(f"✓ LLM responded ({len(answer)} chars)")
+        lines.append(f"> Model: {model}")
+        lines.append(f"> Answer: \"{answer[:200]}{'...' if len(answer) > 200 else ''}\"")
 
         return jsonify(make_result(True, lines))
 
