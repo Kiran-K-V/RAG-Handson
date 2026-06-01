@@ -1,0 +1,74 @@
+IIT DOLAKHPUR — PLACEMENT GUIDELINES 2024-25
+=============================================
+
+ELIGIBILITY CRITERIA
+--------------------
+To be eligible for campus placements, a student must satisfy ALL of the following:
+  1. Minimum CGPA of 6.0 (on a 10-point scale) at the time of registration.
+  2. No active backlog (failed subject) at the time of the placement drive.
+     Students with cleared backlogs are eligible.
+  3. Minimum 75% attendance in the current semester.
+  4. No pending disciplinary action from the Dean of Students office.
+
+Students who have accepted a Pre-Placement Offer (PPO) from an internship company
+are not eligible to sit for other companies unless the PPO is formally declined in
+writing before August 15.
+
+REGISTRATION PROCESS
+--------------------
+  - Registration opens: August 1 (via the Placement Portal at placement.iitdolakhpur.ac.in)
+  - Registration deadline: August 20
+  - Document verification: August 21–25
+  - Placement season begins: September 1
+
+Students must upload the following during registration: updated resume (max 1 page),
+passport-size photograph, consolidated marksheet, and links to coding profiles
+(LeetCode, GitHub, or equivalent).
+
+COMPANY TIERS
+-------------
+Companies are classified into three tiers based on CTC (Cost to Company):
+  - Mass Recruiters: CTC up to ₹8 LPA. Students may accept one Mass Recruiter offer
+    and still appear for higher tiers.
+  - Dream: CTC between ₹8 LPA and ₹20 LPA. Once a Dream offer is accepted, the
+    student is removed from the Dream pool but may still sit for Super Dream.
+  - Super Dream: CTC above ₹20 LPA. Once a Super Dream offer is accepted, the
+    student is removed from all placement pools.
+
+A student may hold at most one offer at any time. If a higher-tier offer is received,
+the lower-tier offer is automatically released.
+
+PLACEMENT TIMELINE
+------------------
+  - September 1–15: Pre-Placement Talks (PPTs) by registered companies.
+  - September 16–30: Online assessments and coding tests.
+  - October 1 onwards: Interview rounds (Day 0, Day 1, Day 2, etc.)
+  - Day 0 (October 1): Super Dream companies only.
+  - Day 1 (October 2): Dream companies.
+  - Day 2 onwards: Mass Recruiters and remaining companies.
+
+WHAT STUDENTS MUST PREPARE
+---------------------------
+  - Resume: Single page, peer-reviewed, approved by the Placement Cell.
+  - Coding Profiles: Active profiles on LeetCode (minimum 150 problems solved),
+    GitHub with at least 3 public repositories.
+  - Core Subjects: Data Structures, Algorithms, OS, DBMS, Computer Networks.
+  - Aptitude: Quantitative aptitude, logical reasoning, verbal ability.
+  - Communication: Group discussion and HR interview preparation.
+
+OFF-CAMPUS PLACEMENTS
+---------------------
+Students may pursue off-campus placements at any time. However, they must inform
+the Placement Cell before accepting an off-campus offer. Off-campus offers count
+towards tier restrictions — a student who accepts an off-campus Dream offer cannot
+sit for on-campus Dream companies.
+
+PRE-PLACEMENT TALKS AND TEST FORMAT
+------------------------------------
+Companies conduct a 45-minute PPT before their recruitment process. Attendance at
+the PPT is mandatory for students who wish to appear for that company's selection
+process. Tests are typically conducted on HackerEarth or HackerRank platforms and
+last 60–90 minutes.
+
+For queries: placement@iitdolakhpur.ac.in | Training & Placement Office, Ground
+Floor, Administrative Block | Ext. 2400.

@@ -1,0 +1,61 @@
+IIT DOLAKHPUR — ATTENDANCE POLICY (Academic Year 2024-25)
+=========================================================
+
+MINIMUM ATTENDANCE REQUIREMENT
+------------------------------
+Every student must maintain a minimum of 75% attendance in EACH registered course
+independently. Attendance is calculated subject-wise, not as an aggregate across
+all courses. A student who meets 75% overall but falls below 75% in any single
+subject will still face consequences for that specific subject.
+
+HOW ATTENDANCE IS RECORDED
+--------------------------
+Attendance is captured through a biometric fingerprint system installed at the
+entrance of every lecture hall, laboratory, and tutorial room. Students must scan
+their fingerprint within the first 10 minutes of a scheduled class. Late arrivals
+(after 10 minutes) are marked as absent. Proxy attendance is a disciplinary offence
+and will result in suspension of the student's biometric access for 7 days.
+
+CONSEQUENCES OF LOW ATTENDANCE
+------------------------------
+Students whose attendance falls below 75% in any subject will face the following:
+  1. Below 75% but above 65%: A warning letter is issued to the student and parents.
+  2. Below 65% but above 50%: The student is detained from appearing in the
+     End-Semester Examination for that subject. They must re-register next semester.
+  3. Below 50%: The student is deregistered from the course entirely. The course
+     will appear as "W" (Withdrawn) on the transcript.
+
+Detained students may appeal to the Dean of Academics within 7 days of the
+detention notice.
+
+CONDONATION OF ATTENDANCE
+--------------------------
+Attendance shortage may be condoned (excused) under the following circumstances:
+  - Medical Leave: Supported by a medical certificate from the IITD Health Centre
+    or a government hospital. Self-signed certificates are not accepted. Maximum
+    condonation: 15 days per semester.
+  - Sports Representation: Students representing IITD at inter-IIT, national, or
+    international events. Must be certified by the Sports Officer.
+  - Cultural/Technical Events: Participation in institute-approved events (Techfest,
+    Culrav) with prior written approval from the faculty advisor.
+  - Family Emergency: Death or critical illness of an immediate family member,
+    supported by documentary evidence. Maximum: 10 days.
+
+Condonation applications must be submitted within 5 working days of resuming
+classes. Late applications will not be entertained.
+
+GRACE MARKS PROVISION
+---------------------
+There is no provision for grace marks to compensate for attendance shortage.
+Attendance and academic performance are evaluated independently. However, students
+with 95% or above attendance in a subject are eligible for a 2% bonus on their
+End-Semester Examination score (capped at the maximum marks for that exam).
+
+FACULTY RESPONSIBILITIES
+------------------------
+Faculty members must upload attendance records to the Student Portal within 24
+hours of each class session. Discrepancies reported by students within 48 hours
+will be investigated by the department attendance coordinator.
+
+For queries: academic@iitdolakhpur.ac.in | Dean of Academics Office, Room 104,
+Administrative Block.
