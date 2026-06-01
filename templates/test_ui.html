@@ -3,38 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IIT Dholakpur — Pipeline Test Lab</title>
+    <title>IIT Dholakpur — RAG Pipeline Playground</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0a0a;
-            --surface: #141414;
-            --surface-2: #1e1e1e;
-            --surface-3: #282828;
-            --border: #2a2a2a;
-            --border-hover: #3a3a3a;
-            --text: #ebebeb;
-            --text-muted: #999;
-            --text-dim: #5a5a5a;
+            --bg: #09090b;
+            --surface: #131316;
+            --surface-2: #1a1a1f;
+            --surface-3: #232329;
+            --border: #27272a;
+            --border-hover: #3f3f46;
+            --text: #fafafa;
+            --text-muted: #a1a1aa;
+            --text-dim: #52525b;
             --accent: #f97316;
             --accent-hover: #fb923c;
+            --accent-dim: rgba(249, 115, 22, 0.1);
             --green: #22c55e;
-            --green-dim: rgba(34, 197, 94, 0.06);
+            --green-dim: rgba(34, 197, 94, 0.08);
             --green-border: rgba(34, 197, 94, 0.25);
             --red: #ef4444;
-            --red-dim: rgba(239, 68, 68, 0.06);
-            --red-border: rgba(239, 68, 68, 0.25);
+            --red-dim: rgba(239, 68, 68, 0.08);
+            --red-border: rgba(239, 68, 68, 0.3);
             --blue: #3b82f6;
-            --blue-dim: rgba(59, 130, 246, 0.06);
+            --blue-dim: rgba(59, 130, 246, 0.08);
             --blue-border: rgba(59, 130, 246, 0.25);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.08);
+            --purple: #a855f7;
+            --purple-dim: rgba(168, 85, 247, 0.08);
             --radius: 10px;
             --radius-sm: 6px;
+            --sidebar-w: 220px;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg);
@@ -44,684 +48,1436 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .layout {
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 2.5rem 1.5rem;
+        /* ── Layout ── */
+        .app { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 10;
         }
+        .sidebar-brand {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-brand h1 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            line-height: 1.3;
+        }
+        .sidebar-brand h1 span { color: var(--accent); }
+        .sidebar-brand p {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .sidebar-nav { flex: 1; padding: 0.5rem 0; overflow-y: auto; }
+        .nav-section-label {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.75rem 1rem 0.35rem;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 1rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            width: 100%;
+            text-align: left;
+            transition: all 0.12s ease;
+            border-left: 2px solid transparent;
+        }
+        .nav-item:hover { color: var(--text); background: var(--surface-2); }
+        .nav-item.active {
+            color: var(--text);
+            background: var(--surface-2);
+            border-left-color: var(--accent);
+        }
+        .nav-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 600;
+            width: 20px; height: 20px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 5px;
+            background: var(--surface-3);
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+        .nav-item.active .nav-num { background: var(--accent); color: white; }
+        .nav-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--surface-3);
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        .nav-dot.ready { background: var(--green); }
+        .nav-dot.error { background: var(--red); }
 
-        /* Header */
-        .header { margin-bottom: 2rem; }
-
-        .header h1 {
-            font-size: 1.5rem;
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            min-width: 0;
+        }
+        .panel { display: none; padding: 2rem 2.5rem; max-width: 1100px; }
+        .panel.active { display: block; animation: fadeIn 0.2s ease; }
+        .panel-header { margin-bottom: 1.5rem; }
+        .panel-header h2 {
+            font-size: 1.25rem;
             font-weight: 700;
             letter-spacing: -0.3px;
         }
-
-        .header p {
+        .panel-header p {
             color: var(--text-muted);
-            font-size: 0.88rem;
-            margin-top: 0.4rem;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 2rem;
-        }
-
-        .tab {
-            font-family: 'Inter', sans-serif;
             font-size: 0.82rem;
-            font-weight: 500;
-            padding: 0.75rem 1.2rem;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.15s ease;
+            margin-top: 0.25rem;
         }
 
-        .tab:hover { color: var(--text); }
-        .tab.active { color: var(--text); border-bottom-color: var(--accent); }
-
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; animation: fadeIn 0.2s ease; }
-
-        /* Test Panel */
-        .actions {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
+        /* ── Shared components ── */
         .btn {
             font-family: 'Inter', sans-serif;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
-            padding: 0.55rem 1.2rem;
+            padding: 0.5rem 1.1rem;
             border: none;
             border-radius: var(--radius-sm);
             cursor: pointer;
             transition: all 0.12s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
         }
-
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); }
-        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
         .btn-ghost {
             background: var(--surface-2);
             color: var(--text-muted);
             border: 1px solid var(--border);
         }
-        .btn-ghost:hover { border-color: var(--border-hover); color: var(--text); }
-        .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-ghost:hover:not(:disabled) { border-color: var(--border-hover); color: var(--text); }
+        .btn-sm { font-size: 0.72rem; padding: 0.35rem 0.8rem; }
 
-        .run-status {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            font-family: 'JetBrains Mono', monospace;
-            margin-left: auto;
-        }
-
-        /* Progress */
-        .progress-bar { margin-bottom: 1.5rem; display: none; }
-        .progress-bar.active { display: block; }
-
-        .progress-track {
-            height: 2px;
-            background: var(--surface-3);
-            border-radius: 1px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--accent);
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .progress-label {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            margin-top: 0.4rem;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Test Items */
-        .test-list { display: flex; flex-direction: column; gap: 0.6rem; }
-
-        .test-item {
+        .card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
-            transition: border-color 0.2s ease, background 0.2s ease;
         }
-
-        .test-item.passed { border-color: var(--green-border); background: var(--green-dim); }
-        .test-item.failed { border-color: var(--red-border); background: var(--red-dim); }
-        .test-item.running { border-color: var(--blue-border); background: var(--blue-dim); }
-
-        .test-item-header {
-            padding: 0.8rem 1rem;
+        .card-header {
+            padding: 0.75rem 1rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-        }
-
-        .test-num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.68rem;
-            font-weight: 600;
-            color: var(--text-dim);
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--surface-3);
-            flex-shrink: 0;
-        }
-
-        .test-item.passed .test-num { background: var(--green); color: white; }
-        .test-item.failed .test-num { background: var(--red); color: white; }
-        .test-item.running .test-num { background: var(--blue); color: white; }
-
-        .test-info { flex: 1; min-width: 0; }
-
-        .test-name { font-size: 0.85rem; font-weight: 600; }
-
-        .test-desc {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 1px;
-        }
-
-        .test-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-run-single {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            padding: 0.3rem 0.6rem;
-            background: var(--surface-3);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.1s ease;
         }
-
-        .btn-run-single:hover { border-color: var(--accent); color: var(--accent); }
-        .btn-run-single:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        .test-badge {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            font-weight: 500;
-            padding: 0.15rem 0.5rem;
-            border-radius: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .test-item.passed .test-badge { color: var(--green); background: rgba(34,197,94,0.1); }
-        .test-item.failed .test-badge { color: var(--red); background: rgba(239,68,68,0.1); }
-        .test-item.running .test-badge { color: var(--blue); background: rgba(59,130,246,0.1); }
-        .test-badge.idle { color: var(--text-dim); }
-
-        /* Test Output */
-        .test-output {
-            display: none;
+        .card-header:hover { background: var(--surface-2); }
+        .card-body {
             border-top: 1px solid var(--border);
-            padding: 0.8rem 1rem;
+            padding: 0.85rem 1rem;
+            display: none;
         }
+        .card-body.open { display: block; }
 
-        .test-output.show { display: block; }
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 500;
+            padding: 0.12rem 0.45rem;
+            border-radius: 3px;
+            background: var(--surface-3);
+            color: var(--text-muted);
+        }
+        .tag-accent { background: var(--accent-dim); color: var(--accent); }
+        .tag-green { background: var(--green-dim); color: var(--green); }
+        .tag-blue { background: var(--blue-dim); color: var(--blue); }
+        .tag-purple { background: var(--purple-dim); color: var(--purple); }
 
-        .output-block {
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+        }
+        .code-block {
             background: var(--bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 0.8rem;
+            padding: 0.85rem 1rem;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.72rem;
-            line-height: 1.9;
+            line-height: 1.8;
             color: var(--text-muted);
             overflow-x: auto;
             white-space: pre-wrap;
             word-break: break-word;
+            max-height: 400px;
+            overflow-y: auto;
         }
-
-        .output-block .line-pass { color: var(--green); }
-        .output-block .line-fail { color: var(--red); }
-        .output-block .line-info { color: var(--text); }
-        .output-block .line-dim { color: var(--text-dim); }
-
-        /* Summary */
-        .summary {
-            margin-top: 1.5rem;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            text-align: center;
-            display: none;
+        .stat-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
         }
-
-        .summary.active { display: block; animation: fadeIn 0.3s ease; }
-        .summary.all-passed { border-color: var(--green-border); }
-
-        .summary-score {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin: 0.3rem 0;
-        }
-
-        .summary-score .pass-num { color: var(--green); }
-        .summary-score .divider { color: var(--text-dim); }
-        .summary-score .total-num { color: var(--text-muted); }
-
-        .summary-label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
-
-        .summary.all-passed .summary-label { color: var(--green); }
-
-        .summary-msg {
-            margin-top: 0.6rem;
-            font-size: 0.82rem;
-            color: var(--text-dim);
-        }
-
-        /* Guide Panel */
-        .guide-section {
-            margin-bottom: 2.5rem;
-        }
-
-        .guide-section h2 {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-        }
-
-        .guide-section h3 {
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin: 1.5rem 0 0.5rem;
-            color: var(--text);
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .guide-section h3:first-of-type {
-            border-top: none;
-            padding-top: 0;
-            margin-top: 1rem;
-        }
-
-        .guide-section p, .guide-section li {
-            font-size: 0.84rem;
-            color: var(--text-muted);
-            line-height: 1.75;
-        }
-
-        .guide-section ul, .guide-section ol {
-            padding-left: 1.2rem;
-            margin: 0.5rem 0;
-        }
-
-        .guide-section li { margin-bottom: 0.3rem; }
-
-        .guide-section code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.76rem;
-            background: var(--surface-3);
-            padding: 0.15rem 0.4rem;
-            border-radius: 3px;
-            color: var(--accent);
-        }
-
-        .guide-section pre {
+        .stat-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 0.8rem 1rem;
-            margin: 0.75rem 0;
+            padding: 0.65rem 1rem;
+            min-width: 120px;
+        }
+        .stat-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.74rem;
-            line-height: 1.7;
-            color: var(--text-muted);
-            overflow-x: auto;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .guide-file {
-            display: inline-block;
+        .error-box {
+            background: var(--red-dim);
+            border: 1px solid var(--red-border);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            margin-top: 1rem;
+        }
+        .error-box .error-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--red);
+            margin-bottom: 0.3rem;
+        }
+        .error-box .error-msg {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.72rem;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            color: var(--accent);
-            margin: 0.2rem 0;
+            color: var(--text-muted);
+            line-height: 1.7;
         }
 
-        .guide-step {
+        .not-impl-box {
+            background: var(--yellow-dim);
+            border: 1px solid rgba(234,179,8,0.25);
+            border-radius: var(--radius);
+            padding: 1.2rem 1.5rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .not-impl-box .ni-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--yellow);
+            margin-bottom: 0.25rem;
+        }
+        .not-impl-box .ni-msg {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .prereq-box {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 1.2rem;
-            margin: 1rem 0;
+            padding: 2.5rem;
+            text-align: center;
+        }
+        .prereq-box .prereq-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.3;
+        }
+        .prereq-box .prereq-msg {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
         }
 
-        .guide-step-num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.68rem;
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.4rem;
-        }
-
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .spinner {
-            width: 12px;
-            height: 12px;
+        .spinner-inline {
+            width: 14px; height: 14px;
             border: 2px solid var(--border);
-            border-top-color: var(--blue);
+            border-top-color: var(--accent);
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
             display: inline-block;
         }
 
-        /* Responsive */
-        @media (max-width: 640px) {
-            .layout { padding: 1.5rem 1rem; }
-            .header h1 { font-size: 1.2rem; }
-            .btn-run-single { display: none; }
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .search-input {
+            flex: 1;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            padding: 0.6rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+        .search-input:focus { border-color: var(--accent); }
+        .search-input::placeholder { color: var(--text-dim); }
+
+        select.select-sm {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            padding: 0.5rem 0.7rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .slider-group label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            min-width: 80px;
+        }
+        .slider-group input[type="range"] {
+            flex: 1;
+            accent-color: var(--accent);
+            max-width: 300px;
+        }
+        .slider-group .slider-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--accent);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .chunk-list, .result-list, .doc-list, .emb-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .result-rank {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            flex-shrink: 0;
+        }
+        .distance-bar-wrap {
+            width: 100%;
+            max-width: 200px;
+            height: 4px;
+            background: var(--surface-3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .distance-bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .answer-box {
+            background: var(--surface);
+            border: 1px solid var(--green-border);
+            border-radius: var(--radius);
+            padding: 1.2rem 1.5rem;
+            margin-top: 1rem;
+        }
+        .answer-box .answer-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.4rem;
+        }
+        .answer-box .answer-text {
+            font-size: 0.88rem;
+            color: var(--text);
+            line-height: 1.75;
+        }
+
+        .no-api-box {
+            background: var(--yellow-dim);
+            border: 1px solid rgba(234,179,8,0.25);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            margin-top: 1rem;
+        }
+        .no-api-box .nab-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--yellow);
+            margin-bottom: 0.2rem;
+        }
+        .no-api-box .nab-msg {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .collapsible-header:hover { color: var(--text); }
+        .collapsible-header .arrow { transition: transform 0.2s ease; font-size: 0.6rem; }
+        .collapsible-header.open .arrow { transform: rotate(90deg); }
+        .collapsible-body { display: none; }
+        .collapsible-body.open { display: block; }
+
+        .sim-demo {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            margin-top: 1rem;
+        }
+        .sim-demo h4 {
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-muted);
+        }
+        .sim-inputs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .sim-inputs textarea {
+            flex: 1;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            padding: 0.5rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            resize: vertical;
+            min-height: 50px;
+            outline: none;
+        }
+        .sim-inputs textarea:focus { border-color: var(--accent); }
+        .sim-result {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 0.5rem;
+        }
+
+        /* ── Guide ── */
+        .guide-section { margin-bottom: 2.5rem; }
+        .guide-section h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        .guide-section p, .guide-section li {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.75;
+        }
+        .guide-section ul, .guide-section ol { padding-left: 1.2rem; margin: 0.5rem 0; }
+        .guide-section li { margin-bottom: 0.3rem; }
+        .guide-section code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.74rem;
+            background: var(--surface-3);
+            padding: 0.12rem 0.4rem;
+            border-radius: 3px;
+            color: var(--accent);
+        }
+        .guide-section pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.85rem 1rem;
+            margin: 0.75rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            overflow-x: auto;
+        }
+        .fact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+        .fact-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+        }
+        .fact-card .fact-company {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        .fact-card .fact-text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0;
+            font-size: 0.78rem;
+        }
+        .compare-table th, .compare-table td {
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        .compare-table th {
+            background: var(--surface-2);
+            font-weight: 600;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .compare-table td { color: var(--text-muted); background: var(--surface); }
+
+        .stage-guide {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            margin: 0.75rem 0;
+        }
+        .stage-guide .sg-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+        .stage-guide .sg-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+        .stage-guide .sg-body { font-size: 0.78rem; color: var(--text-muted); line-height: 1.7; }
+        .stage-guide .sg-pitfall {
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--red-dim);
+            border-radius: var(--radius-sm);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .stage-guide .sg-pitfall strong { color: var(--red); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 56px; }
+            .sidebar-brand h1, .sidebar-brand p, .nav-section-label, .nav-item span:not(.nav-num):not(.nav-dot) { display: none; }
+            .nav-item { justify-content: center; padding: 0.55rem 0; border-left: none; }
+            .nav-dot { display: none; }
+            .main { margin-left: 56px; }
+            .panel { padding: 1.5rem 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="layout">
-        <header class="header">
-            <h1>IIT Dholakpur — Pipeline Test Lab</h1>
-            <p>Test, verify, and understand each stage of your RAG pipeline.</p>
-        </header>
-
-        <nav class="tabs">
-            <button class="tab active" onclick="switchTab('tests')">Tests</button>
-            <button class="tab" onclick="switchTab('guide')">Guide</button>
+<div class="app">
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h1>IIT <span>Dholakpur</span></h1>
+            <p>RAG Playground</p>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Pipeline Stages</div>
+            <button class="nav-item active" onclick="switchTab('documents')" id="nav-documents">
+                <span class="nav-num">1</span>
+                <span>Documents</span>
+                <span class="nav-dot" id="dot-documents"></span>
+            </button>
+            <button class="nav-item" onclick="switchTab('chunking')" id="nav-chunking">
+                <span class="nav-num">2</span>
+                <span>Chunking</span>
+                <span class="nav-dot" id="dot-chunking"></span>
+            </button>
+            <button class="nav-item" onclick="switchTab('embeddings')" id="nav-embeddings">
+                <span class="nav-num">3</span>
+                <span>Embeddings</span>
+                <span class="nav-dot" id="dot-embeddings"></span>
+            </button>
+            <button class="nav-item" onclick="switchTab('retrieval')" id="nav-retrieval">
+                <span class="nav-num">4</span>
+                <span>Retrieval</span>
+                <span class="nav-dot" id="dot-retrieval"></span>
+            </button>
+            <button class="nav-item" onclick="switchTab('generation')" id="nav-generation">
+                <span class="nav-num">5</span>
+                <span>Generation</span>
+                <span class="nav-dot" id="dot-generation"></span>
+            </button>
+            <div class="nav-section-label" style="margin-top: 0.5rem;">Resources</div>
+            <button class="nav-item" onclick="switchTab('guide')" id="nav-guide">
+                <span class="nav-num" style="background:var(--purple-dim);color:var(--purple);">?</span>
+                <span>Guide</span>
+                <span class="nav-dot"></span>
+            </button>
         </nav>
+    </aside>
 
-        <!-- TESTS TAB -->
-        <div class="tab-panel active" id="panel-tests">
-            <div class="actions">
-                <button class="btn btn-primary" id="runBtn" onclick="runAllTests()">Run All</button>
-                <button class="btn btn-ghost" onclick="resetAll()">Reset</button>
-                <span class="run-status" id="runStatus"></span>
+    <!-- ── Main content ── -->
+    <main class="main">
+
+        <!-- ════════════ TAB 1: DOCUMENTS ════════════ -->
+        <div class="panel active" id="panel-documents">
+            <div class="panel-header">
+                <h2>Document Loading</h2>
+                <p>Load the .txt source files from <code class="mono" style="color:var(--accent)">data/</code> and inspect their contents.</p>
             </div>
-
-            <div class="progress-bar" id="progressBar">
-                <div class="progress-track">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="progress-label" id="progressLabel"></div>
+            <div style="margin-bottom:1rem;">
+                <button class="btn btn-primary" id="btnLoadDocs" onclick="loadDocuments()">Load Documents</button>
             </div>
+            <div id="docsResult"></div>
+        </div>
 
-            <div class="test-list" id="testList"></div>
-
-            <div class="summary" id="summary">
-                <div class="summary-label" id="summaryLabel">Results</div>
-                <div class="summary-score">
-                    <span class="pass-num" id="passNum">0</span>
-                    <span class="divider">/</span>
-                    <span class="total-num" id="totalNum">0</span>
+        <!-- ════════════ TAB 2: CHUNKING ════════════ -->
+        <div class="panel" id="panel-chunking">
+            <div class="panel-header">
+                <h2>Text Chunking</h2>
+                <p>Split documents into overlapping character windows. Adjust chunk size and overlap to see how it affects the output.</p>
+            </div>
+            <div id="chunkPrereq"></div>
+            <div id="chunkControls" style="display:none;">
+                <div class="slider-group">
+                    <label>Chunk size</label>
+                    <input type="range" id="sliderChunkSize" min="100" max="1000" step="50" value="300" oninput="document.getElementById('valChunkSize').textContent=this.value">
+                    <span class="slider-val" id="valChunkSize">300</span>
                 </div>
-                <div class="summary-msg" id="summaryMsg"></div>
+                <div class="slider-group">
+                    <label>Overlap</label>
+                    <input type="range" id="sliderOverlap" min="0" max="200" step="10" value="50" oninput="document.getElementById('valOverlap').textContent=this.value">
+                    <span class="slider-val" id="valOverlap">50</span>
+                </div>
+                <div style="margin:1rem 0 1rem;">
+                    <button class="btn btn-primary" id="btnChunk" onclick="runChunking()">Chunk Documents</button>
+                </div>
+                <div id="chunkResult"></div>
             </div>
         </div>
 
-        <!-- GUIDE TAB -->
-        <div class="tab-panel" id="panel-guide">
+        <!-- ════════════ TAB 3: EMBEDDINGS ════════════ -->
+        <div class="panel" id="panel-embeddings">
+            <div class="panel-header">
+                <h2>Embedding Generation</h2>
+                <p>Convert text chunks into 384-dimensional vectors using <code class="mono" style="color:var(--accent)">all-MiniLM-L6-v2</code>.</p>
+            </div>
+            <div id="embPrereq"></div>
+            <div id="embControls" style="display:none;">
+                <div style="margin-bottom:1rem;">
+                    <button class="btn btn-primary" id="btnEmbed" onclick="runEmbeddings()">Generate Embeddings</button>
+                </div>
+                <div id="embResult"></div>
+                <div class="sim-demo" id="simDemo" style="display:none;">
+                    <h4>Cosine Similarity Explorer</h4>
+                    <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.75rem;">Enter two texts to see how similar their embedding vectors are (1.0 = identical meaning, 0.0 = unrelated).</p>
+                    <div class="sim-inputs">
+                        <textarea id="simTextA" placeholder="Text A — e.g. 'What is the attendance policy?'"></textarea>
+                        <textarea id="simTextB" placeholder="Text B — e.g. 'minimum attendance requirement'"></textarea>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="runSimilarity()">Compare</button>
+                    <div class="sim-result" id="simResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════ TAB 4: RETRIEVAL ════════════ -->
+        <div class="panel" id="panel-retrieval">
+            <div class="panel-header">
+                <h2>Retrieval</h2>
+                <p>Search the indexed documents by semantic similarity. Enter a question and see which chunks are most relevant.</p>
+            </div>
+            <div id="retPrereq"></div>
+            <div id="retControls" style="display:none;">
+                <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;align-items:center;">
+                    <button class="btn btn-ghost btn-sm" id="btnBuildIndex" onclick="buildIndex()">Build Index</button>
+                    <span class="mono" style="color:var(--text-dim);font-size:0.7rem;" id="indexStatus">Index not built</span>
+                </div>
+                <div class="search-bar">
+                    <input class="search-input" id="searchQuery" placeholder="Ask a question — e.g. 'What is the CGPA cutoff for placements?'" onkeydown="if(event.key==='Enter')runSearch()">
+                    <select class="select-sm" id="searchN">
+                        <option value="3">Top 3</option>
+                        <option value="5" selected>Top 5</option>
+                        <option value="10">Top 10</option>
+                    </select>
+                    <button class="btn btn-primary" id="btnSearch" onclick="runSearch()">Search</button>
+                </div>
+                <div id="searchResult"></div>
+            </div>
+        </div>
+
+        <!-- ════════════ TAB 5: GENERATION ════════════ -->
+        <div class="panel" id="panel-generation">
+            <div class="panel-header">
+                <h2>Generation</h2>
+                <p>Run the full RAG pipeline: retrieve context, build a prompt, and generate an LLM answer.</p>
+            </div>
+            <div id="genPrereq"></div>
+            <div id="genControls" style="display:none;">
+                <div class="search-bar">
+                    <input class="search-input" id="genQuery" placeholder="Ask a question — e.g. 'What happens if attendance falls below 75%?'" onkeydown="if(event.key==='Enter')runGenerate()">
+                    <button class="btn btn-primary" id="btnGenerate" onclick="runGenerate()">Generate</button>
+                </div>
+                <div id="genResult"></div>
+            </div>
+        </div>
+
+        <!-- ════════════ TAB 6: GUIDE ════════════ -->
+        <div class="panel" id="panel-guide">
+            <div class="panel-header">
+                <h2>High-ROI Reading Materials</h2>
+                <p>Industry context, pipeline deep-dives, and the "why" behind every stage.</p>
+            </div>
+
+            <!-- Why RAG? -->
             <div class="guide-section">
-                <h2>How the RAG Pipeline Works</h2>
-                <p>Each file in <code>src/</code> handles one stage. You implement them in order — each stage depends on the one before it.</p>
-
-                <h3>Stage 1 — Document Loading</h3>
-                <div class="guide-step">
-                    <div class="guide-step-num">File: src/load_docs.py</div>
-                    <p>Read the three .txt files from <code>data/</code> into a Python dictionary. Keys are filenames, values are file contents.</p>
-                    <pre>from src.load_docs import load_documents
-docs = load_documents("data")
-# → {"attendance_policy.txt": "...", "college_handbook.txt": "...", ...}</pre>
-                    <p><strong>Key concepts:</strong> Use <code>pathlib.Path</code> for file operations. The <code>.glob("*.txt")</code> method finds files matching a pattern. Read with <code>.read_text(encoding="utf-8")</code>.</p>
-                </div>
-
-                <h3>Stage 2 — Chunking</h3>
-                <div class="guide-step">
-                    <div class="guide-step-num">File: src/chunking.py</div>
-                    <p>Split each document into smaller overlapping windows. This is needed because embedding models work best on focused, short text — not entire documents.</p>
-                    <pre>from src.chunking import chunk_text
-chunks = chunk_text("A long document...", chunk_size=300, overlap=50)
-# → ["chunk 1 (300 chars)", "chunk 2 (overlaps by 50 chars)", ...]</pre>
-                    <p><strong>Key concepts:</strong> A sliding window with step size = <code>chunk_size - overlap</code>. The overlap ensures sentences at boundaries appear in both adjacent chunks.</p>
-                </div>
-
-                <h3>Stage 3 — Embeddings</h3>
-                <div class="guide-step">
-                    <div class="guide-step-num">File: src/embeddings.py</div>
-                    <p>Convert text into 384-dimensional vectors using <code>all-MiniLM-L6-v2</code>. Similar meanings produce nearby vectors — this is what enables semantic search.</p>
-                    <pre>from src.embeddings import load_embedding_model, embed_texts
-model = load_embedding_model()
-vectors = embed_texts(model, ["attendance policy", "canteen hours"])
-# → [[0.023, -0.15, ...], [0.089, 0.04, ...]]  (384 floats each)</pre>
-                    <p><strong>Key concepts:</strong> <code>model.encode(texts)</code> returns numpy arrays. Call <code>.tolist()</code> to convert to Python lists. Queries and documents must use the same model.</p>
-                </div>
-
-                <h3>Stage 4 — Vector Storage</h3>
-                <div class="guide-step">
-                    <div class="guide-step-num">File: src/vector_store.py</div>
-                    <p>Store chunk text, vectors, and metadata in ChromaDB. Persistence means you only embed once — future runs load from disk.</p>
-                    <pre>from src.vector_store import get_chroma_client, create_collection, add_chunks
-client = get_chroma_client()  # Persists to chroma_db/
-collection = create_collection(client)
-add_chunks(collection, chunks, embeddings)</pre>
-                    <p><strong>Key concepts:</strong> <code>collection.add(ids=..., documents=..., embeddings=..., metadatas=...)</code>. Each chunk needs a unique ID and metadata containing its source filename.</p>
-                </div>
-
-                <h3>Stage 5 — Retrieval</h3>
-                <div class="guide-step">
-                    <div class="guide-step-num">File: src/retrieve.py</div>
-                    <p>Given a question, embed it and query ChromaDB for the most similar chunks. Format the results into a context string with source citations.</p>
-                    <pre>from src.retrieve import retrieve_chunks, format_context
-results = retrieve_chunks(collection, query_embedding, n_results=5)
-context = format_context(results)
-# → "[Source: attendance_policy.txt]\nMinimum attendance is 75%...\n---"</pre>
-                    <p><strong>Key concepts:</strong> <code>collection.query(query_embeddings=[vec], n_results=5)</code> returns nested lists. Results include documents, metadatas, and distances.</p>
-                </div>
-
-                <h3>Stage 6 — Generation</h3>
-                <div class="guide-step">
-                    <div class="guide-step-num">File: src/generate.py</div>
-                    <p>Construct a prompt that includes a system instruction (answer only from context, cite sources), the retrieved context, and the user's question. Call an OpenAI-compatible API.</p>
-                    <pre>from src.generate import build_prompt, call_llm
-prompt = build_prompt(query="What is the min attendance?", context=context)
-answer = call_llm(prompt, api_key="...", model="gpt-3.5-turbo")</pre>
-                    <p><strong>Key concepts:</strong> The system instruction prevents hallucination. The <code>base_url</code> parameter lets you point at Ollama or any compatible server. Messages use <code>[{"role": "user", "content": prompt}]</code>.</p>
-                </div>
-
-                <h3>Running the Full App</h3>
-                <div class="guide-step">
-                    <div class="guide-step-num">File: src/app.py</div>
-                    <p>Wire all stages together. Two modes:</p>
-                    <pre># Index documents (run once)
-python -m src.app --build
-
-# Ask questions interactively
-python -m src.app</pre>
-                    <p><strong>Setup:</strong> Copy <code>.env.example</code> to <code>.env</code> and set your <code>OPENAI_API_KEY</code>. For Ollama, set <code>OPENAI_BASE_URL=http://localhost:11434/v1</code> and <code>OPENAI_MODEL=llama3</code>.</p>
+                <h3>Who Uses RAG in Production?</h3>
+                <p>RAG isn't academic theory — it's the dominant architecture for production AI systems that need grounded, up-to-date answers.</p>
+                <div class="fact-grid">
+                    <div class="fact-card">
+                        <div class="fact-company">Google</div>
+                        <div class="fact-text">Search Generative Experience (SGE) uses RAG to ground AI Overviews in real-time web content rather than relying on stale training data.</div>
+                    </div>
+                    <div class="fact-card">
+                        <div class="fact-company">GitHub Copilot</div>
+                        <div class="fact-text">Retrieves from your open files, imports, and repository context before generating code suggestions. Pure RAG over your codebase.</div>
+                    </div>
+                    <div class="fact-card">
+                        <div class="fact-company">Perplexity AI</div>
+                        <div class="fact-text">Built entirely on RAG. Every answer cites sources. The company is valued at $9B+ — built on retrieval, not fine-tuning.</div>
+                    </div>
+                    <div class="fact-card">
+                        <div class="fact-company">Amazon</div>
+                        <div class="fact-text">Customer service bots use RAG to retrieve from product manuals and policy docs, handling millions of queries with accurate, cited answers.</div>
+                    </div>
+                    <div class="fact-card">
+                        <div class="fact-company">Microsoft 365 Copilot</div>
+                        <div class="fact-text">Retrieves from your emails, documents, and Teams chats via Microsoft Graph before generating responses. Enterprise RAG at scale.</div>
+                    </div>
+                    <div class="fact-card">
+                        <div class="fact-company">Notion AI</div>
+                        <div class="fact-text">Searches your workspace pages and databases as context before answering questions — your personal knowledge base as a RAG corpus.</div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <script>
-        const TESTS = [
-            { id: "load_documents", name: "Document Loading", desc: "Read .txt files from data/ into a dictionary", endpoint: "/run_test/load_documents" },
-            { id: "chunking", name: "Text Chunking", desc: "Split documents into overlapping character windows", endpoint: "/run_test/chunking" },
-            { id: "embeddings", name: "Embedding Generation", desc: "Convert text chunks into 384-dim vectors", endpoint: "/run_test/embeddings" },
-            { id: "chroma", name: "Vector Storage", desc: "Store and retrieve from ChromaDB by similarity", endpoint: "/run_test/chroma" },
-            { id: "retrieval", name: "Retrieval Pipeline", desc: "End-to-end: load, chunk, embed, store, and query", endpoint: "/run_test/full_pipeline" },
-            { id: "generation", name: "LLM Generation", desc: "Build prompt and call the language model", endpoint: "/run_test/generation" }
-        ];
+            <!-- RAG vs Fine-tuning -->
+            <div class="guide-section">
+                <h3>RAG vs Fine-Tuning: When to Use What</h3>
+                <table class="compare-table">
+                    <thead>
+                        <tr><th></th><th>RAG</th><th>Fine-Tuning</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="font-weight:600;color:var(--text)">Best for</td><td>Factual Q&A, docs, search</td><td>Style, tone, domain jargon</td></tr>
+                        <tr><td style="font-weight:600;color:var(--text)">Data freshness</td><td>Real-time (update corpus anytime)</td><td>Frozen at training time</td></tr>
+                        <tr><td style="font-weight:600;color:var(--text)">Hallucination control</td><td>Strong — answers grounded in retrieved text</td><td>Weak — model still generates freely</td></tr>
+                        <tr><td style="font-weight:600;color:var(--text)">Cost</td><td>Low — no GPU training, just embeddings + storage</td><td>High — GPU hours, data curation</td></tr>
+                        <tr><td style="font-weight:600;color:var(--text)">Citability</td><td>Built-in — you know which chunks were used</td><td>None — opaque generation</td></tr>
+                        <tr><td style="font-weight:600;color:var(--text)">Setup time</td><td>Hours (this workshop!)</td><td>Days to weeks</td></tr>
+                    </tbody>
+                </table>
+                <p style="margin-top:0.5rem;"><strong style="color:var(--accent)">Takeaway:</strong> For knowledge-grounded applications (helpdesks, documentation, customer support), RAG is almost always the right choice. Fine-tuning is for changing <em>how</em> a model speaks, not <em>what</em> it knows.</p>
+            </div>
 
-        let isRunning = false;
+            <!-- Stage guides -->
+            <div class="guide-section">
+                <h3>Stage-by-Stage Deep Dive</h3>
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            document.querySelector(`.tab-panel#panel-${tab}`).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function renderTests() {
-            const list = document.getElementById('testList');
-            list.innerHTML = TESTS.map((t, i) => `
-                <div class="test-item" id="item-${t.id}">
-                    <div class="test-item-header">
-                        <div class="test-num">${i + 1}</div>
-                        <div class="test-info" onclick="toggleOutput('${t.id}')" style="cursor:pointer">
-                            <div class="test-name">${t.name}</div>
-                            <div class="test-desc">${t.desc}</div>
-                        </div>
-                        <div class="test-actions">
-                            <button class="btn-run-single" onclick="runSingle('${t.id}')" id="btn-${t.id}">run</button>
-                            <span class="test-badge idle" id="status-${t.id}">idle</span>
-                        </div>
-                    </div>
-                    <div class="test-output" id="output-${t.id}">
-                        <div class="output-block" id="block-${t.id}"></div>
+                <div class="stage-guide">
+                    <div class="sg-num">Stage 1 — Document Loading</div>
+                    <div class="sg-title">src/load_docs.py</div>
+                    <div class="sg-body">
+                        <p>Read <code>.txt</code> files from <code>data/</code> into a <code>dict[str, str]</code> mapping filenames to content.</p>
+                        <pre>def load_documents(folder_path: str) -> dict[str, str]
+def validate_folder(folder_path: str) -> bool</pre>
+                        <div class="sg-pitfall"><strong>Common pitfall:</strong> Using <code>open()</code> without specifying <code>encoding="utf-8"</code> — fails on Windows with non-ASCII characters. Use <code>Path.read_text(encoding="utf-8")</code>.</div>
                     </div>
                 </div>
-            `).join('');
+
+                <div class="stage-guide">
+                    <div class="sg-num">Stage 2 — Chunking</div>
+                    <div class="sg-title">src/chunking.py</div>
+                    <div class="sg-body">
+                        <p>Sliding window with <code>step = chunk_size - overlap</code>. Overlap ensures sentences at boundaries appear in both adjacent chunks.</p>
+                        <pre>def chunk_text(text: str, chunk_size: int = 300, overlap: int = 50) -> list[str]
+def chunk_all_documents(documents: dict, chunk_size: int = 300, overlap: int = 50) -> list[dict]</pre>
+                        <div class="sg-pitfall"><strong>Common pitfall:</strong> Off-by-one errors in the sliding window. The last chunk may be shorter than <code>chunk_size</code> — that's expected. Don't discard it.</div>
+                    </div>
+                </div>
+
+                <div class="stage-guide">
+                    <div class="sg-num">Stage 3 — Embeddings</div>
+                    <div class="sg-title">src/embeddings.py</div>
+                    <div class="sg-body">
+                        <p>SentenceTransformers' <code>model.encode()</code> returns numpy arrays. Call <code>.tolist()</code> to convert to Python lists for ChromaDB.</p>
+                        <pre>def load_embedding_model(model_name: str = "all-MiniLM-L6-v2") -> Any
+def embed_texts(model, texts: list[str]) -> list[list[float]]
+def embed_query(model, query: str) -> list[float]</pre>
+                        <div class="sg-pitfall"><strong>Common pitfall:</strong> Returning numpy arrays instead of Python lists. ChromaDB expects <code>list[list[float]]</code>, not <code>np.ndarray</code>.</div>
+                    </div>
+                </div>
+
+                <div class="stage-guide">
+                    <div class="sg-num">Stage 4 — Vector Storage</div>
+                    <div class="sg-title">src/vector_store.py</div>
+                    <div class="sg-body">
+                        <p>ChromaDB stores vectors + metadata together. Use <code>get_or_create_collection</code> for idempotency.</p>
+                        <pre>def get_chroma_client(persist_directory: str = "chroma_db") -> Any
+def create_collection(client, collection_name: str = "dholakpur_helpdesk") -> Any
+def add_chunks(collection, chunks: list[dict], embeddings: list[list[float]]) -> None</pre>
+                        <div class="sg-pitfall"><strong>Common pitfall:</strong> Calling <code>create_collection</code> instead of <code>get_or_create_collection</code> — fails on second run because collection already exists.</div>
+                    </div>
+                </div>
+
+                <div class="stage-guide">
+                    <div class="sg-num">Stage 5 — Retrieval</div>
+                    <div class="sg-title">src/retrieve.py</div>
+                    <div class="sg-body">
+                        <p><code>collection.query()</code> returns nested lists. Flatten results into <code>[{text, source, chunk_id, distance}]</code>.</p>
+                        <pre>def retrieve_chunks(collection, query_embedding: list[float], n_results: int = 5) -> list[dict]
+def format_context(chunks: list[dict]) -> str</pre>
+                        <div class="sg-pitfall"><strong>Common pitfall:</strong> ChromaDB returns <code>{"documents": [[...]], "metadatas": [[...]], "distances": [[...]]}</code> — note the double nesting. Access with <code>[0]</code>.</div>
+                    </div>
+                </div>
+
+                <div class="stage-guide">
+                    <div class="sg-num">Stage 6 — Generation</div>
+                    <div class="sg-title">src/generate.py</div>
+                    <div class="sg-body">
+                        <p>The system prompt is the most critical anti-hallucination measure. It tells the LLM to only answer from the retrieved context.</p>
+                        <pre>def build_prompt(query: str, context: str) -> str
+def call_llm(prompt: str, api_key: str, model: str = "gpt-3.5-turbo", base_url: str | None = None) -> str
+def generate_answer(query: str, context: str, api_key: str, ...) -> str</pre>
+                        <div class="sg-pitfall"><strong>Common pitfall:</strong> Not including an explicit grounding instruction ("only answer from the provided context"). Without it, the LLM will happily invent policies.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chunking strategies -->
+            <div class="guide-section">
+                <h3>Chunking Strategies Compared</h3>
+                <table class="compare-table">
+                    <thead>
+                        <tr><th>Strategy</th><th>How it works</th><th>Pros</th><th>Cons</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight:600;color:var(--accent)">Fixed-size (this workshop)</td>
+                            <td>Sliding window of N characters with overlap</td>
+                            <td>Simple, predictable, no dependencies</td>
+                            <td>Splits mid-sentence, no semantic awareness</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">Sentence-based</td>
+                            <td>Split on sentence boundaries using NLP tokenizer</td>
+                            <td>Preserves sentence integrity</td>
+                            <td>Uneven chunk sizes, needs NLP library</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">Recursive (LangChain)</td>
+                            <td>Try multiple separators: \n\n, \n, sentence, character</td>
+                            <td>Adapts to document structure</td>
+                            <td>Complex, framework-dependent</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">Semantic chunking</td>
+                            <td>Embed sentences, group by similarity</td>
+                            <td>Meaningful, topic-coherent chunks</td>
+                            <td>Expensive (needs embeddings for chunking itself)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Embedding models -->
+            <div class="guide-section">
+                <h3>Embedding Model Landscape</h3>
+                <table class="compare-table">
+                    <thead>
+                        <tr><th>Model</th><th>Dims</th><th>Speed</th><th>Quality</th><th>Cost</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight:600;color:var(--accent)">all-MiniLM-L6-v2 (this workshop)</td>
+                            <td>384</td>
+                            <td>Very fast</td>
+                            <td>Good</td>
+                            <td>Free (local)</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">OpenAI text-embedding-3-small</td>
+                            <td>1536</td>
+                            <td>API latency</td>
+                            <td>Excellent</td>
+                            <td>$0.02 / 1M tokens</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">Cohere embed-v3</td>
+                            <td>1024</td>
+                            <td>API latency</td>
+                            <td>Excellent</td>
+                            <td>$0.10 / 1M tokens</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">BGE-large-en-v1.5</td>
+                            <td>1024</td>
+                            <td>Moderate</td>
+                            <td>Very good</td>
+                            <td>Free (local)</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">nomic-embed-text-v1.5</td>
+                            <td>768</td>
+                            <td>Fast</td>
+                            <td>Very good</td>
+                            <td>Free (local, Ollama)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Further reading -->
+            <div class="guide-section">
+                <h3>Further Reading</h3>
+                <ul>
+                    <li><strong>Original RAG paper:</strong> "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks" — Lewis et al., 2020 (Facebook AI)</li>
+                    <li><strong>Chunking deep-dive:</strong> "Evaluating the Impact of Chunk Size on RAG System Performance" — Pinecone Research, 2024</li>
+                    <li><strong>Embedding models benchmark:</strong> MTEB Leaderboard on Hugging Face — the standard benchmark for text embedding quality</li>
+                    <li><strong>ChromaDB docs:</strong> docs.trychroma.com — the vector database used in this workshop</li>
+                    <li><strong>Prompt engineering for RAG:</strong> "Lost in the Middle" — Liu et al., 2023 (Stanford) — how LLMs handle long contexts</li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+// ── State ──
+const state = {
+    documentsLoaded: false,
+    chunksReady: false,
+    embeddingsReady: false,
+    indexBuilt: false,
+};
+
+function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Tab switching ──
+function switchTab(tab) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('nav-' + tab).classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+    updatePrereqs();
+}
+
+function setDot(id, status) {
+    const dot = document.getElementById('dot-' + id);
+    if (!dot) return;
+    dot.className = 'nav-dot' + (status === 'ready' ? ' ready' : status === 'error' ? ' error' : '');
+}
+
+function updatePrereqs() {
+    // Chunking
+    const chunkPrereq = document.getElementById('chunkPrereq');
+    const chunkControls = document.getElementById('chunkControls');
+    if (!state.documentsLoaded) {
+        chunkPrereq.innerHTML = `<div class="prereq-box"><div class="prereq-icon">1</div><div class="prereq-msg">Load documents first in the Documents tab.</div><button class="btn btn-ghost btn-sm" onclick="switchTab('documents')">Go to Documents</button></div>`;
+        chunkControls.style.display = 'none';
+    } else {
+        chunkPrereq.innerHTML = '';
+        chunkControls.style.display = 'block';
+    }
+    // Embeddings
+    const embPrereq = document.getElementById('embPrereq');
+    const embControls = document.getElementById('embControls');
+    if (!state.chunksReady) {
+        embPrereq.innerHTML = `<div class="prereq-box"><div class="prereq-icon">2</div><div class="prereq-msg">Chunk documents first in the Chunking tab.</div><button class="btn btn-ghost btn-sm" onclick="switchTab('chunking')">Go to Chunking</button></div>`;
+        embControls.style.display = 'none';
+    } else {
+        embPrereq.innerHTML = '';
+        embControls.style.display = 'block';
+    }
+    // Retrieval — needs at least documents loaded for build-index
+    const retPrereq = document.getElementById('retPrereq');
+    const retControls = document.getElementById('retControls');
+    if (!state.documentsLoaded) {
+        retPrereq.innerHTML = `<div class="prereq-box"><div class="prereq-icon">1</div><div class="prereq-msg">Load documents first, then build the index.</div><button class="btn btn-ghost btn-sm" onclick="switchTab('documents')">Go to Documents</button></div>`;
+        retControls.style.display = 'none';
+    } else {
+        retPrereq.innerHTML = '';
+        retControls.style.display = 'block';
+    }
+    // Generation
+    const genPrereq = document.getElementById('genPrereq');
+    const genControls = document.getElementById('genControls');
+    if (!state.indexBuilt) {
+        genPrereq.innerHTML = `<div class="prereq-box"><div class="prereq-icon">4</div><div class="prereq-msg">Build the search index first in the Retrieval tab.</div><button class="btn btn-ghost btn-sm" onclick="switchTab('retrieval')">Go to Retrieval</button></div>`;
+        genControls.style.display = 'none';
+    } else {
+        genPrereq.innerHTML = '';
+        genControls.style.display = 'block';
+    }
+}
+
+// ── Error rendering ──
+function renderError(data) {
+    if (data.not_implemented) {
+        return `<div class="not-impl-box"><div class="ni-title">Not Yet Implemented</div><div class="ni-msg">${esc(data.error)}</div></div>`;
+    }
+    let html = `<div class="error-box"><div class="error-title">${esc(data.error_type || 'Error')}: ${esc(data.error)}</div>`;
+    if (data.traceback) {
+        html += `<div class="error-msg" style="margin-top:0.5rem;"><pre style="margin:0;white-space:pre-wrap;">${esc(data.traceback)}</pre></div>`;
+    }
+    html += '</div>';
+    return html;
+}
+
+// ── Tab 1: Documents ──
+async function loadDocuments() {
+    const btn = document.getElementById('btnLoadDocs');
+    const target = document.getElementById('docsResult');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span> Loading...';
+    target.innerHTML = '';
+
+    try {
+        const res = await fetch('/api/load-documents', { method: 'POST' });
+        const data = await res.json();
+        if (!data.success) {
+            target.innerHTML = renderError(data);
+            setDot('documents', 'error');
+            return;
+        }
+        state.documentsLoaded = true;
+        setDot('documents', 'ready');
+
+        let totalChars = 0, totalWords = 0, totalLines = 0;
+        data.documents.forEach(d => { totalChars += d.chars; totalWords += d.words; totalLines += d.lines; });
+
+        let html = `<div class="stat-row">
+            <div class="stat-card"><div class="stat-value">${data.documents.length}</div><div class="stat-label">Files</div></div>
+            <div class="stat-card"><div class="stat-value">${totalChars.toLocaleString()}</div><div class="stat-label">Characters</div></div>
+            <div class="stat-card"><div class="stat-value">${totalWords.toLocaleString()}</div><div class="stat-label">Words</div></div>
+            <div class="stat-card"><div class="stat-value">${totalLines}</div><div class="stat-label">Lines</div></div>
+        </div><div class="doc-list">`;
+
+        data.documents.forEach(doc => {
+            const id = 'doc-' + doc.filename.replace(/\W/g, '_');
+            html += `<div class="card">
+                <div class="card-header" onclick="toggleCard('${id}')">
+                    <span class="tag tag-accent">${esc(doc.filename)}</span>
+                    <span style="flex:1"></span>
+                    <span class="mono" style="color:var(--text-dim);font-size:0.68rem;">${doc.chars.toLocaleString()} chars &middot; ${doc.lines} lines &middot; ${doc.words} words</span>
+                </div>
+                <div class="card-body" id="${id}">
+                    <div class="code-block">${esc(doc.content)}</div>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+        target.innerHTML = html;
+        updatePrereqs();
+    } catch (err) {
+        target.innerHTML = `<div class="error-box"><div class="error-title">Network Error</div><div class="error-msg">${esc(err.message)}</div></div>`;
+        setDot('documents', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Load Documents';
+    }
+}
+
+function toggleCard(id) {
+    document.getElementById(id).classList.toggle('open');
+}
+
+// ── Tab 2: Chunking ──
+async function runChunking() {
+    const btn = document.getElementById('btnChunk');
+    const target = document.getElementById('chunkResult');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span> Chunking...';
+    target.innerHTML = '';
+
+    const chunkSize = parseInt(document.getElementById('sliderChunkSize').value);
+    const overlap = parseInt(document.getElementById('sliderOverlap').value);
+
+    try {
+        const res = await fetch('/api/chunk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chunk_size: chunkSize, overlap: overlap }),
+        });
+        const data = await res.json();
+        if (!data.success) {
+            target.innerHTML = renderError(data);
+            setDot('chunking', 'error');
+            return;
+        }
+        state.chunksReady = true;
+        setDot('chunking', 'ready');
+
+        const s = data.stats;
+        let sourceHtml = '';
+        for (const [src, cnt] of Object.entries(s.by_source)) {
+            sourceHtml += `<div class="stat-card"><div class="stat-value">${cnt}</div><div class="stat-label">${esc(src)}</div></div>`;
         }
 
-        function toggleOutput(id) {
-            document.getElementById(`output-${id}`).classList.toggle('show');
+        let html = `<div class="stat-row">
+            <div class="stat-card"><div class="stat-value">${s.total}</div><div class="stat-label">Total Chunks</div></div>
+            <div class="stat-card"><div class="stat-value">${s.avg_size}</div><div class="stat-label">Avg Size (chars)</div></div>
+            ${sourceHtml}
+        </div>`;
+
+        html += `<p style="font-size:0.72rem;color:var(--text-dim);margin-bottom:0.5rem;">Showing all ${data.chunks.length} chunks (chunk_size=${chunkSize}, overlap=${overlap})</p>`;
+        html += '<div class="chunk-list">';
+        data.chunks.forEach((c, i) => {
+            const id = 'chunk-' + i;
+            html += `<div class="card">
+                <div class="card-header" onclick="toggleCard('${id}')">
+                    <span class="tag tag-blue">#${i + 1}</span>
+                    <span class="tag">${esc(c.source)}</span>
+                    <span class="mono" style="font-size:0.65rem;color:var(--text-dim);flex:1;text-align:right;">${c.chars} chars</span>
+                    <span class="mono" style="font-size:0.6rem;color:var(--text-dim);">${esc(c.chunk_id)}</span>
+                </div>
+                <div class="card-body" id="${id}">
+                    <div class="code-block">${esc(c.text)}</div>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+        target.innerHTML = html;
+        updatePrereqs();
+    } catch (err) {
+        target.innerHTML = `<div class="error-box"><div class="error-title">Network Error</div><div class="error-msg">${esc(err.message)}</div></div>`;
+        setDot('chunking', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Chunk Documents';
+    }
+}
+
+// ── Tab 3: Embeddings ──
+async function runEmbeddings() {
+    const btn = document.getElementById('btnEmbed');
+    const target = document.getElementById('embResult');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span> Generating...';
+    target.innerHTML = '';
+
+    try {
+        const res = await fetch('/api/embed', { method: 'POST' });
+        const data = await res.json();
+        if (!data.success) {
+            target.innerHTML = renderError(data);
+            setDot('embeddings', 'error');
+            return;
         }
+        state.embeddingsReady = true;
+        setDot('embeddings', 'ready');
 
-        function setTestState(id, state, outputHtml) {
-            const item = document.getElementById(`item-${id}`);
-            const badge = document.getElementById(`status-${id}`);
-            const output = document.getElementById(`output-${id}`);
-            const block = document.getElementById(`block-${id}`);
+        let html = `<div class="stat-row">
+            <div class="stat-card"><div class="stat-value">${data.total}</div><div class="stat-label">Vectors</div></div>
+            <div class="stat-card"><div class="stat-value">${data.dimension}</div><div class="stat-label">Dimensions</div></div>
+            <div class="stat-card" style="flex:1;"><div class="stat-value" style="font-size:0.88rem;">${esc(data.model_name)}</div><div class="stat-label">Model</div></div>
+        </div>`;
 
-            item.className = `test-item ${state}`;
+        html += '<div style="overflow-x:auto;"><table class="compare-table" style="margin-top:0;"><thead><tr><th>#</th><th>Chunk ID</th><th>Source</th><th>Vector (first 8 of ' + data.dimension + ' dims)</th></tr></thead><tbody>';
+        data.embeddings.forEach((e, i) => {
+            const vecStr = e.vector_preview.map(v => v.toFixed(4)).join(', ') + ', ...';
+            html += `<tr>
+                <td style="color:var(--text-dim)">${i + 1}</td>
+                <td class="mono" style="font-size:0.68rem;">${esc(e.chunk_id)}</td>
+                <td><span class="tag">${esc(e.source)}</span></td>
+                <td class="mono" style="font-size:0.68rem;color:var(--blue);">[${vecStr}]</td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        target.innerHTML = html;
 
-            if (state === 'running') {
-                badge.innerHTML = '<span class="spinner"></span>';
-            } else if (state === 'passed') {
-                badge.textContent = 'pass';
-            } else if (state === 'failed') {
-                badge.textContent = 'fail';
+        document.getElementById('simDemo').style.display = 'block';
+        updatePrereqs();
+    } catch (err) {
+        target.innerHTML = `<div class="error-box"><div class="error-title">Network Error</div><div class="error-msg">${esc(err.message)}</div></div>`;
+        setDot('embeddings', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generate Embeddings';
+    }
+}
+
+async function runSimilarity() {
+    const a = document.getElementById('simTextA').value.trim();
+    const b = document.getElementById('simTextB').value.trim();
+    const target = document.getElementById('simResult');
+    if (!a || !b) { target.textContent = 'Enter both texts.'; return; }
+    target.innerHTML = '<span class="spinner-inline"></span>';
+
+    try {
+        const res = await fetch('/api/similarity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text_a: a, text_b: b }),
+        });
+        const data = await res.json();
+        if (!data.success) { target.textContent = data.error; return; }
+        const pct = (data.similarity * 100).toFixed(2);
+        const color = data.similarity > 0.7 ? 'var(--green)' : data.similarity > 0.4 ? 'var(--yellow)' : 'var(--red)';
+        target.innerHTML = `<span style="color:${color}">${data.similarity.toFixed(6)}</span> <span style="font-size:0.72rem;color:var(--text-dim);">(${pct}% similar)</span>`;
+    } catch (err) {
+        target.textContent = err.message;
+    }
+}
+
+// ── Tab 4: Retrieval ──
+async function buildIndex() {
+    const btn = document.getElementById('btnBuildIndex');
+    const statusEl = document.getElementById('indexStatus');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span> Building...';
+    statusEl.textContent = 'Building index (load → chunk → embed → store)...';
+
+    try {
+        const res = await fetch('/api/build-index', { method: 'POST' });
+        const data = await res.json();
+        if (!data.success) {
+            statusEl.innerHTML = `<span style="color:var(--red)">${esc(data.error)}</span>`;
+            if (data.not_implemented) {
+                document.getElementById('searchResult').innerHTML = renderError(data);
             }
+            setDot('retrieval', 'error');
+            return;
+        }
+        state.documentsLoaded = true;
+        state.chunksReady = true;
+        state.embeddingsReady = true;
+        state.indexBuilt = true;
+        setDot('documents', 'ready');
+        setDot('chunking', 'ready');
+        setDot('embeddings', 'ready');
+        setDot('retrieval', 'ready');
+        statusEl.innerHTML = `<span style="color:var(--green)">${data.doc_count} docs, ${data.chunk_count} chunks, ${data.collection_count} indexed</span>`;
+        updatePrereqs();
+    } catch (err) {
+        statusEl.innerHTML = `<span style="color:var(--red)">${esc(err.message)}</span>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Build Index';
+    }
+}
 
-            if (outputHtml) {
-                block.innerHTML = outputHtml;
-                output.classList.add('show');
-            }
+async function runSearch() {
+    if (!state.indexBuilt) {
+        document.getElementById('searchResult').innerHTML = '<div class="not-impl-box"><div class="ni-title">Index Not Built</div><div class="ni-msg">Click "Build Index" above first.</div></div>';
+        return;
+    }
+    const btn = document.getElementById('btnSearch');
+    const target = document.getElementById('searchResult');
+    const query = document.getElementById('searchQuery').value.trim();
+    const n = parseInt(document.getElementById('searchN').value);
+    if (!query) { target.innerHTML = '<div class="not-impl-box"><div class="ni-msg">Enter a search query.</div></div>'; return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span>';
+    target.innerHTML = '';
+
+    try {
+        const res = await fetch('/api/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, n_results: n }),
+        });
+        const data = await res.json();
+        if (!data.success) {
+            target.innerHTML = renderError(data);
+            return;
         }
 
-        function formatOutput(data) {
-            return data.output.map(line => {
-                if (line.startsWith('✓')) return `<span class="line-pass">${esc(line)}</span>`;
-                if (line.startsWith('✗')) return `<span class="line-fail">${esc(line)}</span>`;
-                if (line.startsWith('>')) return `<span class="line-dim">${esc(line)}</span>`;
-                return `<span class="line-info">${esc(line)}</span>`;
-            }).join('\n');
+        const maxDist = Math.max(...data.results.map(r => r.distance), 0.001);
+
+        let html = '';
+        if (data.query_vector_preview) {
+            html += `<p class="mono" style="font-size:0.68rem;color:var(--text-dim);margin-bottom:0.75rem;">Query vector: [${data.query_vector_preview.map(v => v.toFixed(4)).join(', ')}, ...]</p>`;
+        }
+        html += '<div class="result-list">';
+        data.results.forEach((r, i) => {
+            const similarity = Math.max(0, 1 - r.distance);
+            const simPct = (similarity * 100).toFixed(1);
+            const barWidth = (similarity * 100).toFixed(0);
+            const barColor = similarity > 0.7 ? 'var(--green)' : similarity > 0.4 ? 'var(--yellow)' : 'var(--red)';
+            const id = 'res-' + i;
+            html += `<div class="card">
+                <div class="card-header" onclick="toggleCard('${id}')">
+                    <span class="result-rank">${i + 1}</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                            <span class="tag">${esc(r.source)}</span>
+                            <span class="mono" style="font-size:0.65rem;color:var(--text-dim);">${esc(r.chunk_id)}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.75rem;margin-top:4px;">
+                            <div class="distance-bar-wrap">
+                                <div class="distance-bar" style="width:${barWidth}%;background:${barColor};"></div>
+                            </div>
+                            <span class="mono" style="font-size:0.68rem;color:${barColor};">${simPct}% similar</span>
+                            <span class="mono" style="font-size:0.62rem;color:var(--text-dim);">dist: ${r.distance.toFixed(4)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body open" id="${id}">
+                    <div class="code-block" style="max-height:200px;">${esc(r.text)}</div>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+        target.innerHTML = html;
+    } catch (err) {
+        target.innerHTML = `<div class="error-box"><div class="error-title">Network Error</div><div class="error-msg">${esc(err.message)}</div></div>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Search';
+    }
+}
+
+// ── Tab 5: Generation ──
+async function runGenerate() {
+    const btn = document.getElementById('btnGenerate');
+    const target = document.getElementById('genResult');
+    const query = document.getElementById('genQuery').value.trim();
+    if (!query) { target.innerHTML = '<div class="not-impl-box"><div class="ni-msg">Enter a question.</div></div>'; return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span> Generating...';
+    target.innerHTML = '';
+
+    try {
+        const res = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query }),
+        });
+        const data = await res.json();
+        if (!data.success) {
+            target.innerHTML = renderError(data);
+            setDot('generation', 'error');
+            return;
+        }
+        setDot('generation', 'ready');
+
+        let html = '';
+
+        // Constructed prompt
+        html += `<div class="collapsible-header open" onclick="toggleCollapsible(this)"><span class="arrow">&#9654;</span> Constructed Prompt (sent to LLM)</div>`;
+        html += `<div class="collapsible-body open"><div class="code-block" style="max-height:300px;margin-bottom:1rem;">${esc(data.prompt)}</div></div>`;
+
+        // Retrieved context chunks
+        if (data.context_chunks && data.context_chunks.length) {
+            html += `<div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="arrow">&#9654;</span> Retrieved Context (${data.context_chunks.length} chunks)</div>`;
+            html += '<div class="collapsible-body"><div class="result-list" style="margin-bottom:1rem;">';
+            data.context_chunks.forEach((c, i) => {
+                html += `<div class="card"><div class="card-header" style="cursor:default;">
+                    <span class="tag tag-blue">#${i + 1}</span>
+                    <span class="tag">${esc(c.source)}</span>
+                    <span class="mono" style="font-size:0.62rem;color:var(--text-dim);flex:1;text-align:right;">dist: ${c.distance.toFixed(4)}</span>
+                </div>
+                <div class="card-body open"><div class="code-block" style="max-height:150px;">${esc(c.text)}</div></div>
+                </div>`;
+            });
+            html += '</div></div>';
         }
 
-        function esc(s) {
-            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        // Answer or no-api-key
+        if (data.no_api_key) {
+            html += `<div class="no-api-box">
+                <div class="nab-title">No API Key Configured</div>
+                <div class="nab-msg">The prompt was built successfully (see above), but no LLM call was made.<br>
+                Set <code style="color:var(--accent)">OPENAI_API_KEY</code> in your <code style="color:var(--accent)">.env</code> file, or configure Ollama:<br>
+                <code style="color:var(--accent)">OPENAI_BASE_URL=http://localhost:11434/v1</code><br>
+                <code style="color:var(--accent)">OPENAI_MODEL=llama3</code></div>
+            </div>`;
+        } else if (data.answer) {
+            html += `<div class="answer-box">
+                <div class="answer-label">LLM Answer &middot; ${esc(data.model)}</div>
+                <div class="answer-text">${esc(data.answer)}</div>
+            </div>`;
         }
 
-        async function runTest(test) {
-            setTestState(test.id, 'running', null);
-            try {
-                const res = await fetch(test.endpoint);
-                const data = await res.json();
-                const html = formatOutput(data);
-                setTestState(test.id, data.passed ? 'passed' : 'failed', html);
-                return data.passed;
-            } catch (err) {
-                setTestState(test.id, 'failed', `<span class="line-fail">Network error: ${esc(err.message)}</span>`);
-                return false;
-            }
-        }
+        target.innerHTML = html;
+    } catch (err) {
+        target.innerHTML = `<div class="error-box"><div class="error-title">Network Error</div><div class="error-msg">${esc(err.message)}</div></div>`;
+        setDot('generation', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generate';
+    }
+}
 
-        async function runSingle(id) {
-            if (isRunning) return;
-            const test = TESTS.find(t => t.id === id);
-            if (!test) return;
-            const btn = document.getElementById(`btn-${id}`);
-            btn.disabled = true;
-            await runTest(test);
-            btn.disabled = false;
-        }
+function toggleCollapsible(el) {
+    el.classList.toggle('open');
+    const body = el.nextElementSibling;
+    body.classList.toggle('open');
+}
 
-        function resetAll() {
-            if (isRunning) return;
-            document.getElementById('summary').classList.remove('active', 'all-passed');
-            document.getElementById('progressBar').classList.remove('active');
-            document.getElementById('runStatus').textContent = '';
-            renderTests();
-        }
-
-        async function runAllTests() {
-            if (isRunning) return;
-            isRunning = true;
-
-            const btn = document.getElementById('runBtn');
-            const bar = document.getElementById('progressBar');
-            const fill = document.getElementById('progressFill');
-            const label = document.getElementById('progressLabel');
-            const statusEl = document.getElementById('runStatus');
-            const summary = document.getElementById('summary');
-
-            btn.disabled = true;
-            document.querySelectorAll('.btn-run-single').forEach(b => b.disabled = true);
-            bar.classList.add('active');
-            summary.classList.remove('active', 'all-passed');
-            fill.style.width = '0%';
-            renderTests();
-            document.querySelectorAll('.btn-run-single').forEach(b => b.disabled = true);
-
-            let passed = 0;
-            const total = TESTS.length;
-            const startTime = Date.now();
-
-            for (let i = 0; i < total; i++) {
-                const test = TESTS[i];
-                label.textContent = `${i + 1}/${total} ${test.name}`;
-                fill.style.width = `${(i / total) * 100}%`;
-
-                const result = await runTest(test);
-                if (result) passed++;
-
-                fill.style.width = `${((i + 1) / total) * 100}%`;
-                await new Promise(r => setTimeout(r, 150));
-            }
-
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            label.textContent = `Done in ${elapsed}s`;
-            statusEl.textContent = `${passed}/${total}`;
-
-            document.getElementById('passNum').textContent = passed;
-            document.getElementById('totalNum').textContent = total;
-            const summaryEl = document.getElementById('summary');
-            const summaryLabel = document.getElementById('summaryLabel');
-            const summaryMsg = document.getElementById('summaryMsg');
-
-            if (passed === total) {
-                summaryEl.classList.add('all-passed');
-                summaryLabel.textContent = 'All stages passing';
-                summaryMsg.textContent = 'Pipeline complete. Run: python -m src.app --build';
-            } else {
-                summaryLabel.textContent = `${passed} of ${total} passing`;
-                summaryMsg.textContent = 'Implement the failing stages, then re-run.';
-            }
-
-            summaryEl.classList.add('active');
-            btn.disabled = false;
-            document.querySelectorAll('.btn-run-single').forEach(b => b.disabled = false);
-            isRunning = false;
-        }
-
-        renderTests();
-    </script>
+// ── Init ──
+updatePrereqs();
+</script>
 </body>
 </html>
