@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IIT Dholakpur — RAG Pipeline Test Arena</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=Fredoka:wght@400;600;700&display=swap');
+
+        :root {
+            --orange-primary: #FF6B35;
+            --orange-light: #FFA366;
+            --yellow-bright: #FFD700;
+            --yellow-light: #FFF3CD;
+            --green-success: #28a745;
+            --red-fail: #dc3545;
+            --blue-info: #4A90D9;
+            --purple-accent: #7B2D8B;
+            --bg-cream: #FFF8F0;
+            --panel-border: #2C1810;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: var(--bg-cream);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(123, 45, 139, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--orange-primary), var(--purple-accent));
+            padding: 1.5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.03) 10px,
+                rgba(255,255,255,0.03) 20px
+            );
+            animation: moveStripes 20s linear infinite;
+        }
+
+        @keyframes moveStripes {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(28px, 28px); }
+        }
+
+        .header h1 {
+            font-family: 'Bangers', cursive;
+            color: white;
+            font-size: 2.8rem;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.3), -1px -1px 0 rgba(0,0,0,0.1);
+            position: relative;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            position: relative;
+            font-weight: 700;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Comic Panel Layout */
+        .comic-intro {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            background: white;
+            border: 4px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 6px 6px 0 var(--panel-border);
+            position: relative;
+        }
+
+        .comic-intro::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 30px;
+            height: 30px;
+            background: var(--yellow-bright);
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        .bheem-avatar {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 4px solid var(--orange-primary);
+            object-fit: cover;
+            flex-shrink: 0;
+            animation: float 3s ease-in-out infinite;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .speech-bubble {
+            background: white;
+            border: 3px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.2rem 1.5rem;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-right: 20px solid var(--panel-border);
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 17px solid white;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .run-btn {
+            font-family: 'Bangers', cursive;
+            font-size: 1.6rem;
+            padding: 1rem 3rem;
+            background: linear-gradient(135deg, var(--orange-primary), #FF8C42);
+            color: white;
+            border: 4px solid var(--panel-border);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 var(--panel-border);
+            transition: all 0.15s ease;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .run-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--panel-border);
+        }
+
+        .run-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--panel-border);
+        }
+
+        .run-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .run-btn .btn-icon {
+            margin-right: 8px;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .progress-section.active {
+            display: block;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ladoo-progress {
+            background: white;
+            border: 3px solid var(--panel-border);
+            border-radius: 30px;
+            padding: 8px;
+            height: 50px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .ladoo-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--yellow-bright), var(--orange-light), var(--orange-primary));
+            border-radius: 22px;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+        }
+
+        .ladoo-fill::after {
+            content: '🍪';
+            font-size: 1.4rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.8rem;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--panel-border);
+        }
+
+        /* Test Cards */
+        .test-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .test-card {
+            background: white;
+            border: 3px solid var(--panel-border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        .test-card.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .test-card.passed {
+            border-color: var(--green-success);
+            box-shadow: 4px 4px 0 rgba(40, 167, 69, 0.3);
+        }
+
+        .test-card.failed {
+            border-color: var(--red-fail);
+            box-shadow: 4px 4px 0 rgba(220, 53, 69, 0.3);
+            animation: shake 0.5s ease;
+        }
+
+        .test-card.running {
+            border-color: var(--blue-info);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 4px 4px 0 rgba(74, 144, 217, 0.3); }
+            50% { box-shadow: 4px 4px 15px rgba(74, 144, 217, 0.5); }
+        }
+
+        .test-card-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .test-number {
+            font-family: 'Bangers', cursive;
+            font-size: 1.8rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--yellow-light);
+            border: 3px solid var(--panel-border);
+            flex-shrink: 0;
+        }
+
+        .test-card.passed .test-number {
+            background: #d4edda;
+            border-color: var(--green-success);
+        }
+
+        .test-card.failed .test-number {
+            background: #f8d7da;
+            border-color: var(--red-fail);
+        }
+
+        .test-card.running .test-number {
+            background: #d1ecf1;
+            border-color: var(--blue-info);
+            animation: spin 2s linear infinite;
+        }
+
+        .test-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--panel-border);
+        }
+
+        .test-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .test-status-icon {
+            margin-left: auto;
+            font-size: 2rem;
+        }
+
+        .test-card-body {
+            padding: 1rem 1.5rem;
+        }
+
+        .test-question {
+            background: var(--yellow-light);
+            border: 2px dashed var(--orange-light);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-style: italic;
+            position: relative;
+        }
+
+        .test-question::before {
+            content: '💬';
+            position: absolute;
+            top: -12px;
+            left: 12px;
+            font-size: 1.2rem;
+        }
+
+        .test-result {
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .test-result.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .test-result.success {
+            background: #d4edda;
+            border: 2px solid var(--green-success);
+            color: #155724;
+        }
+
+        .test-result.error {
+            background: #f8d7da;
+            border: 2px solid var(--red-fail);
+            color: #721c24;
+        }
+
+        .test-result pre {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.05);
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        /* Score Board */
+        .scoreboard {
+            display: none;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 4px solid var(--yellow-bright);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scoreboard.active {
+            display: block;
+            animation: zoomIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .scoreboard h2 {
+            font-family: 'Bangers', cursive;
+            color: var(--yellow-bright);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .score-display {
+            font-family: 'Bangers', cursive;
+            font-size: 4rem;
+            color: white;
+            margin: 1rem 0;
+        }
+
+        .score-display .passed-count {
+            color: var(--green-success);
+        }
+
+        .score-display .total-count {
+            color: var(--orange-light);
+        }
+
+        .score-message {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.9);
+            margin-top: 1rem;
+            font-weight: 700;
+        }
+
+        .score-ladoos {
+            font-size: 2rem;
+            margin-top: 1rem;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Confetti */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Comic Action Words */
+        .action-word {
+            position: fixed;
+            font-family: 'Bangers', cursive;
+            font-size: 3rem;
+            color: var(--orange-primary);
+            text-shadow: 2px 2px 0 var(--panel-border);
+            pointer-events: none;
+            z-index: 100;
+            animation: popAndFade 1s ease forwards;
+        }
+
+        @keyframes popAndFade {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.3) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 0; }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--orange-primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .comic-intro {
+                flex-direction: column;
+                text-align: center;
+            }
+            .speech-bubble::before, .speech-bubble::after {
+                display: none;
+            }
+            .header h1 { font-size: 2rem; }
+            .bheem-avatar { width: 120px; height: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <header class="header">
+        <h1>⚡ IIT DHOLAKPUR — TEST ARENA ⚡</h1>
+        <p>Bheem's RAG Pipeline Strength Test</p>
+    </header>
+
+    <main class="container">
+        <!-- Comic Intro Panel -->
+        <div class="comic-intro">
+            <img src="/static/images/bheem_helpdesk.png" alt="Bheem at IIT Dholakpur" class="bheem-avatar">
+            <div class="speech-bubble">
+                <strong>Bheem says:</strong> "Welcome to the Test Arena, warrior! 💪 
+                Just like I test my strength against every challenge in Dholakpur, 
+                you must test your RAG pipeline against these challenges. 
+                Hit the button below and let's see if your code has the strength of a hundred elephants!"
+            </div>
+        </div>
+
+        <!-- Run Button -->
+        <div class="control-panel">
+            <button class="run-btn" id="runBtn" onclick="runAllTests()">
+                <span class="btn-icon">🏋️</span> RUN ALL TESTS!
+            </button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-section" id="progressSection">
+            <div class="ladoo-progress">
+                <div class="ladoo-fill" id="ladooFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Preparing the arena...</div>
+        </div>
+
+        <!-- Test Cards -->
+        <div class="test-grid" id="testGrid">
+            <!-- Cards populated by JS -->
+        </div>
+
+        <!-- Scoreboard -->
+        <div class="scoreboard" id="scoreboard">
+            <h2>🏆 FINAL SCORE 🏆</h2>
+            <div class="score-display">
+                <span class="passed-count" id="passedCount">0</span>
+                /
+                <span class="total-count" id="totalCount">0</span>
+            </div>
+            <div class="score-message" id="scoreMessage"></div>
+            <div class="score-ladoos" id="scoreLadoos"></div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        Built with 💪 at <a href="#">IIT Dholakpur</a> | 
+        Powered by the strength of ladoos 🍪
+    </footer>
+
+    <script>
+        const TESTS = [
+            {
+                id: "test_load_documents",
+                number: 1,
+                title: "Document Loading Strength",
+                subtitle: "Can you lift all 3 documents off the shelf?",
+                question: "Bheem needs to pick up all 3 college documents from the data/ folder. Does load_documents() return a dict with 3 entries, each with a .txt key and non-empty string value?",
+                endpoint: "/run_test/load_documents"
+            },
+            {
+                id: "test_chunking",
+                number: 2,
+                title: "Chunking Power Chop",
+                subtitle: "Split documents like Bheem splits logs!",
+                question: "Can your chunking function break a 600-character text into overlapping pieces? The last 50 chars of chunk[0] should appear at the start of chunk[1] — like links in Bheem's chain!",
+                endpoint: "/run_test/chunking"
+            },
+            {
+                id: "test_embeddings",
+                number: 3,
+                title: "Embedding Brain Power",
+                subtitle: "384 dimensions of pure intelligence",
+                question: "Does your embedding model produce 384-dimensional vectors? Each text must become a list of exactly 384 floats — that's the magic number for MiniLM, Bheem's favourite model!",
+                endpoint: "/run_test/embeddings"
+            },
+            {
+                id: "test_chroma",
+                number: 4,
+                title: "ChromaDB Memory Shield",
+                subtitle: "Store it, search it, find it!",
+                question: "Can ChromaDB store chunks and retrieve the right one? If Bheem stores info about attendance and then asks about it, the attendance chunk should come back on top!",
+                endpoint: "/run_test/chroma"
+            },
+            {
+                id: "test_full_pipeline",
+                number: 5,
+                title: "FULL PIPELINE MEGA PUNCH",
+                subtitle: "The ultimate test — all stages combined!",
+                question: "Load → Chunk → Embed → Store → Retrieve. Does the entire pipeline work end-to-end? When you ask 'What is the attendance policy?', do you get a relevant chunk back from Dholakpur's documents?",
+                endpoint: "/run_test/full_pipeline"
+            }
+        ];
+
+        const ACTION_WORDS = ['POW!', 'WHAM!', 'BOOM!', 'ZAP!', 'CRACK!', 'SMASH!'];
+        const PASS_MESSAGES = ['LADOO TIME! 🍪', 'BHEEM APPROVES! 💪', 'DHOLAKPUR PROUD! 🏆', 'SUPER STRENGTH! ⚡', 'RAJA CLAPS! 👏'];
+        const FAIL_MESSAGES = ['Kalia would laugh... 😅', 'Try again, warrior!', 'Even Bheem fails sometimes!', 'Tuntun Mausi believes in you!'];
+
+        function createTestCards() {
+            const grid = document.getElementById('testGrid');
+            grid.innerHTML = TESTS.map(test => `
+                <div class="test-card" id="card-${test.id}">
+                    <div class="test-card-header">
+                        <div class="test-number">${test.number}</div>
+                        <div>
+                            <div class="test-title">${test.title}</div>
+                            <div class="test-subtitle">${test.subtitle}</div>
+                        </div>
+                        <div class="test-status-icon" id="icon-${test.id}">⏳</div>
+                    </div>
+                    <div class="test-card-body">
+                        <div class="test-question">${test.question}</div>
+                        <div class="test-result" id="result-${test.id}"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showActionWord(x, y) {
+            const word = ACTION_WORDS[Math.floor(Math.random() * ACTION_WORDS.length)];
+            const el = document.createElement('div');
+            el.className = 'action-word';
+            el.textContent = word;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function showConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#FF6B35', '#FFD700', '#28a745', '#7B2D8B', '#4A90D9', '#FF69B4'];
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                    confetti.style.height = (Math.random() * 10 + 5) + 'px';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    container.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        async function runSingleTest(test, index) {
+            const card = document.getElementById(`card-${test.id}`);
+            const icon = document.getElementById(`icon-${test.id}`);
+            const result = document.getElementById(`result-${test.id}`);
+
+            // Show card with animation
+            setTimeout(() => card.classList.add('visible'), index * 200);
+
+            // Wait for card to be visible before running
+            await new Promise(r => setTimeout(r, index * 800 + 400));
+
+            // Set running state
+            card.className = 'test-card visible running';
+            icon.textContent = '🔄';
+
+            try {
+                const response = await fetch(test.endpoint);
+                const data = await response.json();
+
+                if (data.passed) {
+                    card.className = 'test-card visible passed';
+                    icon.textContent = '✅';
+                    result.className = 'test-result success show';
+                    result.innerHTML = `
+                        <strong>${PASS_MESSAGES[Math.floor(Math.random() * PASS_MESSAGES.length)]}</strong>
+                        <pre>${data.message}</pre>
+                    `;
+                    // Show action word near the card
+                    const rect = card.getBoundingClientRect();
+                    showActionWord(rect.right - 80, rect.top + 20);
+                    return true;
+                } else {
+                    card.className = 'test-card visible failed';
+                    icon.textContent = '❌';
+                    result.className = 'test-result error show';
+                    result.innerHTML = `
+                        <strong>${FAIL_MESSAGES[Math.floor(Math.random() * FAIL_MESSAGES.length)]}</strong>
+                        <pre>${data.message}</pre>
+                    `;
+                    return false;
+                }
+            } catch (err) {
+                card.className = 'test-card visible failed';
+                icon.textContent = '💥';
+                result.className = 'test-result error show';
+                result.innerHTML = `
+                    <strong>Connection failed!</strong>
+                    <pre>${err.message}</pre>
+                `;
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            const btn = document.getElementById('runBtn');
+            const progress = document.getElementById('progressSection');
+            const fill = document.getElementById('ladooFill');
+            const progressText = document.getElementById('progressText');
+            const scoreboard = document.getElementById('scoreboard');
+
+            // Reset
+            btn.disabled = true;
+            btn.innerHTML = '<span class="btn-icon">⚡</span> TESTING IN PROGRESS...';
+            progress.classList.add('active');
+            scoreboard.classList.remove('active');
+            fill.style.width = '0%';
+            createTestCards();
+
+            let passed = 0;
+            const total = TESTS.length;
+
+            for (let i = 0; i < TESTS.length; i++) {
+                progressText.textContent = `Running Test ${i + 1}/${total}: ${TESTS[i].title}...`;
+                fill.style.width = ((i) / total * 100) + '%';
+
+                const result = await runSingleTest(TESTS[i], i);
+                if (result) passed++;
+
+                fill.style.width = ((i + 1) / total * 100) + '%';
+                await new Promise(r => setTimeout(r, 300));
+            }
+
+            // Show final score
+            progressText.textContent = 'All tests complete!';
+            fill.style.width = '100%';
+
+            await new Promise(r => setTimeout(r, 800));
+
+            // Scoreboard
+            document.getElementById('passedCount').textContent = passed;
+            document.getElementById('totalCount').textContent = total;
+            scoreboard.classList.add('active');
+
+            const ladooCount = passed;
+            document.getElementById('scoreLadoos').textContent = '🍪'.repeat(ladooCount) || '😢';
+
+            if (passed === total) {
+                document.getElementById('scoreMessage').textContent = 
+                    "PERFECT SCORE! You have the strength of Bheem himself! Tuntun Mausi is sending a lifetime supply of ladoos!";
+                showConfetti();
+            } else if (passed >= 3) {
+                document.getElementById('scoreMessage').textContent = 
+                    "Good effort, warrior! A few more pushups and you'll be ready. Bheem believes in you!";
+            } else {
+                document.getElementById('scoreMessage').textContent = 
+                    "The journey has just begun! Even Bheem had to train. Go back and fill in those TODOs!";
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<span class="btn-icon">🔄</span> RUN AGAIN!';
+        }
+
+        // Initialize
+        createTestCards();
+        // Make cards visible initially (without running)
+        setTimeout(() => {
+            document.querySelectorAll('.test-card').forEach((card, i) => {
+                setTimeout(() => card.classList.add('visible'), i * 150);
+            });
+        }, 500);
+    </script>
+</body>
+</html>
