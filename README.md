@@ -277,6 +277,26 @@ The interactive loop will keep running until you type `quit` or `exit`.
 
 ---
 
+## Testing with the Test Arena
+
+Forget boring terminal test output. We have **Bheem's Test Arena** — a comic-themed
+web UI that runs your pipeline tests with animations, ladoo progress bars, and
+confetti celebrations when you get a perfect score.
+
+```bash
+# Start the Test Arena
+python test_runner.py
+
+# Then open in your browser:
+# http://localhost:5555
+```
+
+Hit "RUN ALL TESTS!" and watch Bheem guide you through each challenge. Green cards
+mean your implementation works. Red cards with a shake animation mean you have TODOs
+left to fill in. Get 5/5 and Tuntun Mausi sends you a lifetime supply of ladoos.
+
+---
+
 ## Hints & Gotchas
 
 - **"ModuleNotFoundError: No module named 'src'"** — Run from the project root directory,
