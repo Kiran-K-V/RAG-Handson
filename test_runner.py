@@ -262,6 +262,29 @@ def api_build_index():
 
 
 # ---------------------------------------------------------------------------
+# API: Clear Database
+# ---------------------------------------------------------------------------
+@app.route("/api/clear-db", methods=["POST"])
+def api_clear_db():
+    try:
+        import shutil
+
+        db_path = "chroma_db"
+        if os.path.isdir(db_path):
+            shutil.rmtree(db_path)
+
+        _cache["collection"] = None
+        _cache["embeddings"] = None
+        _cache["chunks"] = None
+        _cache["documents"] = None
+        _cache["embedding_model"] = None
+
+        return jsonify({"success": True, "message": "Database cleared successfully."})
+    except Exception as e:
+        return _error_response(e)
+
+
+# ---------------------------------------------------------------------------
 # API: Stage 4 — Search / Retrieve
 # ---------------------------------------------------------------------------
 @app.route("/api/search", methods=["POST"])
@@ -280,29 +303,100 @@ def api_search():
         body = request.get_json(silent=True) or {}
         query = body.get("query", "")
         n_results = body.get("n_results", 5)
+        search_type = body.get("search_type", "semantic")
 
         if not query.strip():
             return jsonify({"success": False, "error": "Enter a search query."})
 
-        model = _cache["embedding_model"]
-        query_emb = embed_query(model, query)
-        results = retrieve_chunks(_cache["collection"], query_emb, n_results=n_results)
+        collection = _cache["collection"]
 
-        result_list = []
-        for r in results:
-            result_list.append({
-                "text": r.get("text", ""),
-                "source": r.get("source", ""),
-                "chunk_id": r.get("chunk_id", ""),
-                "distance": round(r.get("distance", 0), 6),
+        if search_type == "keyword":
+            results_raw = collection.query(
+                query_texts=[query],
+                n_results=n_results,
+            )
+            documents = results_raw["documents"][0]
+            metadatas = results_raw["metadatas"][0]
+            distances = results_raw["distances"][0]
+
+            result_list = []
+            for i in range(len(documents)):
+                result_list.append({
+                    "text": documents[i],
+                    "source": metadatas[i].get("source", ""),
+                    "chunk_id": metadatas[i].get("chunk_id", ""),
+                    "distance": round(distances[i], 6),
+                })
+
+            return jsonify({
+                "success": True,
+                "results": result_list,
+                "query": query,
+                "search_type": search_type,
             })
 
-        return jsonify({
-            "success": True,
-            "results": result_list,
-            "query": query,
-            "query_vector_preview": [round(v, 4) for v in query_emb[:8]],
-        })
+        elif search_type == "hybrid":
+            model = _cache["embedding_model"]
+            query_emb = embed_query(model, query)
+
+            sem_raw = collection.query(
+                query_embeddings=[query_emb],
+                n_results=n_results,
+            )
+            kw_raw = collection.query(
+                query_texts=[query],
+                n_results=n_results,
+            )
+
+            seen = set()
+            merged = []
+            for source in [sem_raw, kw_raw]:
+                docs = source["documents"][0]
+                metas = source["metadatas"][0]
+                dists = source["distances"][0]
+                for i in range(len(docs)):
+                    cid = metas[i].get("chunk_id", f"unknown_{i}")
+                    if cid not in seen:
+                        seen.add(cid)
+                        merged.append({
+                            "text": docs[i],
+                            "source": metas[i].get("source", ""),
+                            "chunk_id": cid,
+                            "distance": round(dists[i], 6),
+                        })
+
+            merged.sort(key=lambda x: x["distance"])
+            result_list = merged[:n_results]
+
+            return jsonify({
+                "success": True,
+                "results": result_list,
+                "query": query,
+                "search_type": search_type,
+                "query_vector_preview": [round(v, 4) for v in query_emb[:8]],
+            })
+
+        else:
+            model = _cache["embedding_model"]
+            query_emb = embed_query(model, query)
+            results = retrieve_chunks(collection, query_emb, n_results=n_results)
+
+            result_list = []
+            for r in results:
+                result_list.append({
+                    "text": r.get("text", ""),
+                    "source": r.get("source", ""),
+                    "chunk_id": r.get("chunk_id", ""),
+                    "distance": round(r.get("distance", 0), 6),
+                })
+
+            return jsonify({
+                "success": True,
+                "results": result_list,
+                "query": query,
+                "search_type": search_type,
+                "query_vector_preview": [round(v, 4) for v in query_emb[:8]],
+            })
     except Exception as e:
         return _error_response(e)
 

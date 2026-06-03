@@ -35,6 +35,12 @@ def chunk_text(text: str, chunk_size: int = 300, overlap: int = 50) -> list[str]
     # entire handbook at once. Overlap ensures no sentence gets cut in half
     # without appearing in the next chunk too.
 
+    # SAMPLE RETURN — what your implementation should produce:
+    #   chunk_text("ABCDEFGHIJ", chunk_size=5, overlap=2)
+    #   →  ["ABCDE", "DEFGH", "GHIJ"]
+    #   chunk_text("Hi", chunk_size=300, overlap=50)
+    #   →  ["Hi"]
+
     # TODO 1 — Handle edge cases: if the text is shorter than chunk_size,
     # just return the full text as a single-element list.
     # Hint: A simple len() check is enough here.
@@ -78,6 +84,13 @@ def chunk_all_documents(
     """
     # The chunk_id is crucial for deduplication and traceability. Without it,
     # we'd have no way to know which piece of which document a vector came from.
+
+    # SAMPLE RETURN — what your implementation should produce:
+    #   chunk_all_documents({"file.txt": "some long text..."})
+    #   →  [
+    #       {"text": "some long", "source": "file.txt", "chunk_id": "file.txt_chunk_0"},
+    #       {"text": "ng text...", "source": "file.txt", "chunk_id": "file.txt_chunk_1"},
+    #   ]
 
     # TODO 4 — Loop through each document in the dictionary.
     # Hint: documents.items() gives you (filename, text) pairs.

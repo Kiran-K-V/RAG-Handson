@@ -33,6 +33,10 @@ def load_embedding_model(model_name: str = "all-MiniLM-L6-v2") -> Any:
     # We load the model once and reuse it — loading is expensive (downloads
     # weights the first time), but encoding after that is fast.
 
+    # SAMPLE RETURN — what your implementation should produce:
+    #   model = load_embedding_model()
+    #   →  <SentenceTransformer object>   (a loaded model ready to call .encode())
+
     # TODO 1 — Import SentenceTransformer from the sentence_transformers library.
     # Hint: from sentence_transformers import SentenceTransformer
     # ---
@@ -65,6 +69,11 @@ def embed_texts(model: Any, texts: list[str]) -> list[list[float]]:
     # If we used different models, their vector spaces wouldn't align and
     # similarity search would return garbage results.
 
+    # SAMPLE RETURN — what your implementation should produce:
+    #   embed_texts(model, ["hello", "world"])
+    #   →  [[0.0123, -0.0456, ..., 0.0789],    ← 384 floats (one per dimension)
+    #       [0.0321, -0.0654, ..., 0.0987]]     ← 384 floats
+
     # TODO 3 — Use the model's .encode() method to embed all texts at once.
     # Hint: model.encode(texts) returns a numpy array. Convert it to a list
     # of lists using .tolist() so it's JSON-serializable for ChromaDB.
@@ -92,6 +101,10 @@ def embed_query(model: Any, query: str) -> list[float]:
     """
     # We embed the query with the same model used for documents — this ensures
     # both live in the same vector space and similarity scores are meaningful.
+
+    # SAMPLE RETURN — what your implementation should produce:
+    #   embed_query(model, "What is the attendance policy?")
+    #   →  [0.0123, -0.0456, ..., 0.0789]    ← a single list of 384 floats
 
     # TODO 4 — Use the model's .encode() method on the single query string.
     # Hint: model.encode(query) works for a single string too. Call .tolist()

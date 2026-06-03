@@ -33,6 +33,10 @@ def get_chroma_client(persist_directory: str = "chroma_db") -> Any:
     # Persistence is key — ChromaDB writes its index to disk so we only pay
     # the embedding cost once during the --build step.
 
+    # SAMPLE RETURN — what your implementation should produce:
+    #   client = get_chroma_client("chroma_db")
+    #   →  <chromadb.PersistentClient object>   (connected to the chroma_db/ directory)
+
     # TODO 1 — Import chromadb.
     # Hint: import chromadb
     # ---
@@ -64,6 +68,10 @@ def create_collection(client: Any, collection_name: str = "dholakpur_helpdesk") 
     """
     # get_or_create_collection is idempotent — it returns the existing
     # collection if it already exists, or creates a new one if it doesn't.
+
+    # SAMPLE RETURN — what your implementation should produce:
+    #   collection = create_collection(client, "dholakpur_helpdesk")
+    #   →  <chromadb.Collection object>   (named "dholakpur_helpdesk")
 
     # TODO 3 — Use the client's get_or_create_collection method.
     # Hint: client.get_or_create_collection(name=collection_name)
@@ -99,6 +107,10 @@ def add_chunks(
     # show the source document when returning answers. Without metadata, we'd
     # have vectors but no way to trace them back to their origin.
 
+    # SAMPLE RETURN — this function returns None (side effect: data stored in ChromaDB).
+    #   After calling add_chunks(collection, chunks, embeddings):
+    #   collection.count()  →  len(chunks)   (all chunks are now stored)
+
     # TODO 4 — Extract the list of texts from the chunks.
     # Hint: [chunk["text"] for chunk in chunks]
     # ---
@@ -106,6 +118,11 @@ def add_chunks(
     # Hint: [chunk["chunk_id"] for chunk in chunks]
     # ---
     # TODO 6 — Build the metadata list (each entry needs "source" and "chunk_id").
+    # WHY METADATA? ChromaDB stores vectors for similarity search, but vectors
+    # alone don't tell us WHERE a chunk came from. Metadata attaches the source
+    # filename and chunk_id to each vector so that retrieval results can cite
+    # the original document (e.g., "According to attendance_policy.txt...").
+    # Without metadata, we'd find similar text but couldn't trace it to its source.
     # Hint: [{"source": chunk["source"], "chunk_id": chunk["chunk_id"]} for chunk in chunks]
     # ---
     # TODO 7 — Call collection.add() with ids, documents, embeddings, and metadatas.

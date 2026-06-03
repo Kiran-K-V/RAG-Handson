@@ -59,5 +59,31 @@ Faculty members must upload attendance records to the Student Portal within 24
 hours of each class session. Discrepancies reported by students within 48 hours
 will be investigated by the department attendance coordinator.
 
+ATTENDANCE DURING EXAMINATIONS
+------------------------------
+During Mid-Semester and End-Semester examinations, regular class attendance is
+suspended. However, students appearing for supplementary exams must attend at
+least 50% of revision classes scheduled during the exam period. Lab sessions
+that continue during exam weeks follow their own attendance rules, unchanged.
+
+ONLINE / HYBRID MODE ATTENDANCE
+--------------------------------
+When classes are conducted online (e.g., during monsoon disruptions or health
+emergencies), attendance is tracked through the official video conferencing
+platform (Zoom or Google Meet). Students must keep their cameras on for at least
+80% of the session. Logging in without active participation (camera off, no
+response to polls) counts as proxy attendance and is subject to the same penalties.
+For hybrid mode (simultaneous in-person + online), students registered for the
+in-person slot must attend physically unless granted temporary online permission
+by the faculty advisor.
+
+SEMESTER-END ATTENDANCE AUDIT
+-----------------------------
+At the end of each semester, the department attendance coordinator publishes a
+consolidated attendance report on the Student Portal. Students have a 7-day
+window to raise disputes. After this window closes, the report is finalised and
+forwarded to the Examination Section. No corrections are accepted after
+finalisation.
+
 For queries: academic@iitdholakpur.ac.in | Dean of Academics Office, Room 104,
 Administrative Block.

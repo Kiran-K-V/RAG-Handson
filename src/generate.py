@@ -38,6 +38,16 @@ def build_prompt(query: str, context: str) -> str:
     # hallucination. Without this constraint, the LLM would happily invent
     # policies, exam dates, and phone numbers that don't exist.
 
+    # SAMPLE RETURN — what your implementation should produce:
+    #   build_prompt("What is the attendance policy?", "[Source: ...]\nMin 75%\n---")
+    #   →  "You are a helpful assistant for IIT Dholakpur...
+    #       Context:
+    #       [Source: ...]\nMin 75%\n---
+    #
+    #       Question: What is the attendance policy?
+    #
+    #       Answer:"
+
     # TODO 1 — Define a system instruction string that tells the LLM:
     #   - It is a helpful assistant for IIT Dholakpur students
     #   - It must ONLY answer based on the provided context
@@ -87,6 +97,10 @@ def call_llm(
     # [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}]
     # The system message sets the LLM's behaviour, the user message is the query.
 
+    # SAMPLE RETURN — what your implementation should produce:
+    #   call_llm("You are a helpful assistant...\n\nQuestion: ...", api_key="sk-...")
+    #   →  "According to attendance_policy.txt, the minimum attendance is 75%..."
+
     # TODO 3 — Import the OpenAI client library.
     # Hint: from openai import OpenAI
     # ---
@@ -132,6 +146,10 @@ def generate_answer(
         It takes their question, the relevant document chunks, and produces
         a helpful, cited response.
     """
+    # SAMPLE RETURN — what your implementation should produce:
+    #   generate_answer("What is attendance?", context, api_key="sk-...")
+    #   →  "According to attendance_policy.txt, the minimum attendance is 75%..."
+
     # TODO 8 — Call build_prompt() to construct the prompt.
     # ---
     # TODO 9 — Call call_llm() with the prompt and API credentials.

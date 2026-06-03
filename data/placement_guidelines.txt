@@ -73,5 +73,40 @@ the PPT is mandatory for students who wish to appear for that company's selectio
 process. Tests are typically conducted on HackerEarth or HackerRank platforms and
 last 60–90 minutes.
 
+INTERNSHIP GUIDELINES
+---------------------
+All pre-final year students are required to complete a mandatory summer internship
+(minimum 8 weeks) between May and July. The Placement Cell facilitates internship
+drives starting in January. Students may also pursue self-arranged internships,
+subject to approval by the department internship coordinator. Internship reports
+must be submitted within 2 weeks of completion and carry 4 academic credits.
+Students with outstanding internship performance may receive a Pre-Placement Offer
+(PPO) from the company.
+
+PLACEMENT STATISTICS (Previous Year 2023-24)
+---------------------------------------------
+  - Total students registered: 680
+  - Total offers made: 612 (90% placement rate)
+  - Highest CTC: ₹62 LPA (Super Dream — international role)
+  - Average CTC: ₹14.8 LPA
+  - Median CTC: ₹12.0 LPA
+  - Total companies participated: 145
+  - Top recruiters: TCS, Infosys, Google, Microsoft, Amazon, Flipkart, Goldman Sachs
+  - Sectors: IT (45%), Finance (18%), Core Engineering (15%), Consulting (12%), Others (10%)
+
+DRESS CODE FOR PLACEMENT EVENTS
+--------------------------------
+Students appearing for PPTs, tests, and interviews must adhere to formal dress code:
+  - Men: Formal shirt, trousers, closed shoes. No jeans or sneakers.
+  - Women: Formal attire (kurta/shirt with trousers, salwar suit, or saree). No casual wear.
+  - ID card must be worn visibly during all placement events.
+
+ANTI-BLACKLISTING POLICY
+--------------------------
+Students who accept an offer and later renege (back out) will be blacklisted from
+the placement process for the remainder of the season. The blacklisting also affects
+the company's willingness to recruit from IITD in future years. Students facing
+genuine hardship may appeal to the Placement Committee within 48 hours.
+
 For queries: placement@iitdholakpur.ac.in | Training & Placement Office, Ground
 Floor, Administrative Block | Ext. 2400.

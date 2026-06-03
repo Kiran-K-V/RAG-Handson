@@ -28,6 +28,10 @@ def validate_folder(folder_path: str) -> bool:
         the data/ folder or forgets to clone it? This function catches that
         problem early so we can give a helpful error message.
     """
+    # SAMPLE RETURN — what your implementation should produce:
+    #   validate_folder("data")  →  True
+    #   validate_folder("nonexistent_folder")  →  False
+
     # TODO 1 — We need to confirm the folder exists before doing anything else.
     # Hint: pathlib.Path has an .exists() method and an .is_dir() method.
     # ---
@@ -59,6 +63,14 @@ def load_documents(folder_path: str) -> dict[str, str]:
         We keep track of which file each piece came from — that's how the chatbot
         will cite its sources later.
     """
+    # SAMPLE RETURN — what your implementation should produce:
+    #   load_documents("data")
+    #   →  {
+    #       "attendance_policy.txt": "IIT DHOLAKPUR — ATTENDANCE POLICY ...",
+    #       "college_handbook.txt":  "IIT DHOLAKPUR (IITD) — STUDENT HANDBOOK ...",
+    #       "placement_guidelines.txt": "IIT DHOLAKPUR — PLACEMENT GUIDELINES ...",
+    #   }
+
     # TODO 3 — Use validate_folder() to check the path first.
     # If validation fails, raise a FileNotFoundError with a helpful message.
     # Hint: Call the function you just implemented above.

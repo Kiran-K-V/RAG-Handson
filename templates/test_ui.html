@@ -137,6 +137,27 @@
             flex: 1;
             min-width: 0;
         }
+
+        .top-note {
+            position: fixed;
+            top: 0.75rem;
+            right: 1.25rem;
+            z-index: 100;
+            background: var(--yellow-dim);
+            border: 1px solid rgba(234,179,8,0.3);
+            border-radius: var(--radius-sm);
+            padding: 0.45rem 0.85rem;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--yellow);
+            max-width: 340px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .top-note .note-icon { font-size: 1rem; flex-shrink: 0; }
         .panel { display: none; padding: 2.25rem 2.75rem; max-width: 1100px; }
         .panel.active { display: block; animation: fadeIn 0.2s ease; }
         .panel-header { margin-bottom: 1.75rem; }
@@ -466,46 +487,6 @@
         .collapsible-body { display: none; }
         .collapsible-body.open { display: block; }
 
-        .sim-demo {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.15rem 1.3rem;
-            margin-top: 1.25rem;
-        }
-        .sim-demo h4 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--text);
-        }
-        .sim-inputs {
-            display: flex;
-            gap: 0.6rem;
-            margin-bottom: 0.65rem;
-        }
-        .sim-inputs textarea {
-            flex: 1;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            padding: 0.6rem 0.75rem;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text);
-            resize: vertical;
-            min-height: 56px;
-            outline: none;
-        }
-        .sim-inputs textarea:focus { border-color: var(--accent); }
-        .sim-result {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin-top: 0.65rem;
-        }
-
         /* ── Index status bar ── */
         .index-bar {
             background: var(--surface);
@@ -650,6 +631,10 @@
     </style>
 </head>
 <body>
+<div class="top-note">
+    <span class="note-icon">&#9888;</span>
+    <span>After editing any <code style="color:var(--accent);background:none;padding:0;">src/</code> file, re-run from <strong>Step 1 (Documents)</strong> — the platform re-executes the full pipeline.</span>
+</div>
 <div class="app">
     <!-- ── Sidebar ── -->
     <aside class="sidebar">
@@ -745,16 +730,6 @@
                     <button class="btn btn-primary" id="btnEmbed" onclick="runEmbeddings()">Generate Embeddings</button>
                 </div>
                 <div id="embResult"></div>
-                <div class="sim-demo" id="simDemo" style="display:none;">
-                    <h4>Cosine Similarity Explorer</h4>
-                    <p style="font-size:0.88rem;color:var(--text-dim);margin-bottom:0.85rem;">Enter two texts to see how similar their embedding vectors are (1.0 = identical meaning, 0.0 = unrelated).</p>
-                    <div class="sim-inputs">
-                        <textarea id="simTextA" placeholder="Text A — e.g. 'What is the attendance policy?'"></textarea>
-                        <textarea id="simTextB" placeholder="Text B — e.g. 'minimum attendance requirement'"></textarea>
-                    </div>
-                    <button class="btn btn-ghost btn-sm" onclick="runSimilarity()">Compare</button>
-                    <div class="sim-result" id="simResult"></div>
-                </div>
             </div>
         </div>
 
@@ -772,12 +747,18 @@
                 </div>
                 <div class="search-bar">
                     <input class="search-input" id="searchQuery" placeholder="Ask a question — e.g. 'What is the CGPA cutoff for placements?'" onkeydown="if(event.key==='Enter')runSearch()">
+                    <select class="select-sm" id="searchType" title="Search mode">
+                        <option value="semantic" selected>Semantic</option>
+                        <option value="keyword">Keyword</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
                     <select class="select-sm" id="searchN">
                         <option value="3">Top 3</option>
                         <option value="5" selected>Top 5</option>
                         <option value="10">Top 10</option>
                     </select>
                     <button class="btn btn-primary" id="btnSearch" onclick="runSearch()">Search</button>
+                    <button class="btn btn-ghost btn-sm" id="btnClearDb" onclick="clearDatabase()" title="Clear the vector database and reset index">Clear DB</button>
                 </div>
                 <div id="searchResult"></div>
             </div>
@@ -836,25 +817,6 @@
                         <div class="fact-text">Searches your workspace pages and databases as context before answering questions — your personal knowledge base as a RAG corpus.</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- RAG vs Fine-tuning -->
-            <div class="guide-section">
-                <h3>RAG vs Fine-Tuning: When to Use What</h3>
-                <table class="compare-table">
-                    <thead>
-                        <tr><th></th><th>RAG</th><th>Fine-Tuning</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td style="font-weight:600;color:var(--text)">Best for</td><td>Factual Q&A, docs, search</td><td>Style, tone, domain jargon</td></tr>
-                        <tr><td style="font-weight:600;color:var(--text)">Data freshness</td><td>Real-time (update corpus anytime)</td><td>Frozen at training time</td></tr>
-                        <tr><td style="font-weight:600;color:var(--text)">Hallucination control</td><td>Strong — answers grounded in retrieved text</td><td>Weak — model still generates freely</td></tr>
-                        <tr><td style="font-weight:600;color:var(--text)">Cost</td><td>Low — no GPU training, just embeddings + storage</td><td>High — GPU hours, data curation</td></tr>
-                        <tr><td style="font-weight:600;color:var(--text)">Citability</td><td>Built-in — you know which chunks were used</td><td>None — opaque generation</td></tr>
-                        <tr><td style="font-weight:600;color:var(--text)">Setup time</td><td>Hours (this workshop!)</td><td>Days to weeks</td></tr>
-                    </tbody>
-                </table>
-                <p style="margin-top:0.6rem;"><strong style="color:var(--accent)">Takeaway:</strong> For knowledge-grounded applications (helpdesks, documentation, customer support), RAG is almost always the right choice. Fine-tuning is for changing <em>how</em> a model speaks, not <em>what</em> it knows.</p>
             </div>
 
             <!-- Stage guides -->
@@ -1329,8 +1291,6 @@ async function runEmbeddings() {
         });
         html += '</tbody></table></div>';
         target.innerHTML = html;
-
-        document.getElementById('simDemo').style.display = 'block';
         updatePrereqs();
     } catch (err) {
         target.innerHTML = `<div class="error-box"><div class="error-title">Network Error</div><div class="error-msg">${esc(err.message)}</div></div>`;
@@ -1341,26 +1301,28 @@ async function runEmbeddings() {
     }
 }
 
-async function runSimilarity() {
-    const a = document.getElementById('simTextA').value.trim();
-    const b = document.getElementById('simTextB').value.trim();
-    const target = document.getElementById('simResult');
-    if (!a || !b) { target.textContent = 'Enter both texts.'; return; }
-    target.innerHTML = '<span class="spinner-inline"></span>';
+// ── Clear Database ──
+async function clearDatabase() {
+    const btn = document.getElementById('btnClearDb');
+    btn.disabled = true;
+    btn.textContent = 'Clearing...';
 
     try {
-        const res = await fetch('/api/similarity', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text_a: a, text_b: b }),
-        });
+        const res = await fetch('/api/clear-db', { method: 'POST' });
         const data = await res.json();
-        if (!data.success) { target.textContent = data.error; return; }
-        const pct = (data.similarity * 100).toFixed(2);
-        const color = data.similarity > 0.7 ? 'var(--green)' : data.similarity > 0.4 ? 'var(--yellow)' : 'var(--red)';
-        target.innerHTML = `<span style="color:${color}">${data.similarity.toFixed(6)}</span> <span style="font-size:0.88rem;color:var(--text-dim);">(${pct}% similar)</span>`;
+        if (data.success) {
+            state.indexBuilt = false;
+            state.indexBuilding = false;
+            const statusEl = document.getElementById('indexStatus');
+            if (statusEl) { statusEl.textContent = 'Index cleared. Will rebuild on next search.'; statusEl.className = 'index-label'; }
+            setDot('retrieval', '');
+            document.getElementById('searchResult').innerHTML = '';
+        }
     } catch (err) {
-        target.textContent = err.message;
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Clear DB';
     }
 }
 
@@ -1370,6 +1332,7 @@ async function runSearch() {
     const target = document.getElementById('searchResult');
     const query = document.getElementById('searchQuery').value.trim();
     const n = parseInt(document.getElementById('searchN').value);
+    const searchType = document.getElementById('searchType').value;
     if (!query) { target.innerHTML = '<div class="not-impl-box"><div class="ni-msg">Enter a search query.</div></div>'; return; }
 
     btn.disabled = true;
@@ -1386,7 +1349,7 @@ async function runSearch() {
         const res = await fetch('/api/search', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, n_results: n }),
+            body: JSON.stringify({ query, n_results: n, search_type: searchType }),
         });
         const data = await res.json();
         if (!data.success) {

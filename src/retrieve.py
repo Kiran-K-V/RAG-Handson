@@ -46,6 +46,15 @@ def retrieve_chunks(
     # a plain chatbot. The LLM only sees relevant chunks, not its own training
     # data, which prevents hallucination about made-up policies.
 
+    # SAMPLE RETURN — what your implementation should produce:
+    #   retrieve_chunks(collection, query_embedding, n_results=2)
+    #   →  [
+    #       {"text": "Minimum attendance is 75%...", "source": "attendance_policy.txt",
+    #        "chunk_id": "attendance_policy.txt_chunk_0", "distance": 0.4521},
+    #       {"text": "Students whose attendance...", "source": "attendance_policy.txt",
+    #        "chunk_id": "attendance_policy.txt_chunk_2", "distance": 0.6103},
+    #   ]
+
     # TODO 1 — Call collection.query() with the query embedding.
     # Hint: collection.query(query_embeddings=[query_embedding], n_results=n_results)
     # Note: query_embeddings takes a LIST of embeddings (even for one query).
@@ -53,9 +62,14 @@ def retrieve_chunks(
     # TODO 2 — Parse the results from ChromaDB's response format.
     # ChromaDB returns: {"ids": [[...]], "documents": [[...]], "metadatas": [[...]], "distances": [[...]]}
     # Each is a list of lists (one per query). We only have one query, so take index [0].
+    # Extract: documents = results["documents"][0]
+    #          metadatas = results["metadatas"][0]
+    #          distances = results["distances"][0]
     # ---
     # TODO 3 — Build and return a list of dicts with "text", "source", "chunk_id", "distance".
-    # Hint: zip the documents, metadatas, and distances together for clean iteration.
+    # Loop through each result using indexing or zip, and build a dict for each:
+    #   for i in range(len(documents)):
+    #       chunks.append({"text": documents[i], "source": metadatas[i]["source"], ...})
     raise NotImplementedError("Step 1-3: Query ChromaDB and format the results")
 
 
@@ -83,6 +97,10 @@ def format_context(chunks: list[dict[str, Any]]) -> str:
     # We include the source label so the LLM can cite it in the answer.
     # Without source attribution, the chatbot gives answers but the student
     # can't verify where the information came from.
+
+    # SAMPLE RETURN — what your implementation should produce:
+    #   format_context([{"text": "Min attendance is 75%", "source": "attendance_policy.txt", ...}])
+    #   →  "[Source: attendance_policy.txt]\nMin attendance is 75%\n---"
 
     # TODO 4 — Loop through each chunk and format it as:
     # "[Source: {source}]\n{text}\n---"
