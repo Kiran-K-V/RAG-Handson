@@ -25,40 +25,29 @@ Final integration: `src/app.py` wires all stages into a CLI chatbot.
 
 ## Setup
 
-**Requirements:** Python 3.10+, ~200MB disk (embedding model download).
+**Requirements:** Python 3.10+, [uv](https://docs.astral.sh/uv/getting-started/installation/) package manager, ~200MB disk (embedding model download).
 
 ```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Clone and enter the project
 git clone <your-repo-url>
 cd RAG-Handson
 
-# Create a virtual environment
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies (uv creates the venv automatically)
+uv sync --all-extras
 
 # Configure environment
 cp .env.example .env
-# Edit .env — set OPENAI_API_KEY (or configure Ollama, see below)
+# Edit .env — set OPENAI_API_KEY
 
 # Verify installation
-python -c "import chromadb; import sentence_transformers; print('Ready')"
+uv run python3 -c "import chromadb; import sentence_transformers; print('Ready')"
 ```
 
-### Using Ollama (free, local, no API key needed)
-
-```bash
-ollama pull llama3
-```
-
-Then in `.env`:
-```
-OPENAI_API_KEY=ollama
-OPENAI_BASE_URL=http://localhost:11434/v1
-OPENAI_MODEL=llama3
-```
+> **Why uv?** It resolves and installs dependencies 10-100x faster than pip.
+> The lockfile (`uv.lock`) ensures every student gets identical versions.
 
 ---
 
@@ -67,7 +56,7 @@ OPENAI_MODEL=llama3
 The project includes an interactive web UI where you can test each pipeline stage with real data, see actual outputs, and debug failures in real-time.
 
 ```bash
-python test_runner.py
+uv run python3 test_runner.py
 # → http://localhost:5555
 ```
 
@@ -75,7 +64,7 @@ python test_runner.py
 
 1. **Documents** — Load and browse the source files. See character counts, line counts, word counts. Click to expand and read each document.
 2. **Chunking** — Adjust `chunk_size` and `overlap` with sliders, re-chunk on the fly, see every chunk with its metadata.
-3. **Embeddings** — Generate vectors, see the first 8 dimensions of each embedding. Use the cosine similarity explorer to compare any two texts.
+3. **Embeddings** — Generate vectors, see the first 8 dimensions of each embedding.
 4. **Retrieval** — Build the full index (load → chunk → embed → store), then search with a query. Results show ranked chunks with similarity scores.
 5. **Generation** — Enter a question, see the constructed prompt (what actually gets sent to the LLM), the retrieved context, and the generated answer.
 6. **Guide** — Industry context (who uses RAG in production), stage-by-stage debugging tips, chunking strategy comparisons, embedding model landscape.
@@ -175,8 +164,8 @@ The system prompt is the anti-hallucination guard. It tells the LLM to only answ
 **Implement:** `build_index()`, `query_helpdesk()`, and `main()`
 
 ```bash
-python src/app.py --build    # Index documents (run once)
-python src/app.py            # Interactive Q&A loop
+uv run python3 src/app.py --build    # Index documents (run once)
+uv run python3 src/app.py            # Interactive Q&A loop
 ```
 
 ---
@@ -185,7 +174,7 @@ python src/app.py            # Interactive Q&A loop
 
 | Problem | Fix |
 |---------|-----|
-| `ModuleNotFoundError: No module named 'src'` | Run from the project root, not from inside `src/` |
+| `ModuleNotFoundError: No module named 'src'` | Run from the project root with `uv run python3 ...`, not from inside `src/` |
 | Duplicate chunks after running `--build` twice | Check `collection.count()` before adding |
 | `embed_texts` returns numpy arrays | Call `.tolist()` — ChromaDB expects `list[list[float]]` |
 | Embedding model downloads 80MB on first run | Expected. Needs internet. Be patient. |
@@ -217,7 +206,9 @@ RAG-Handson/
 ├── templates/
 │   └── test_ui.html            # Playground UI
 ├── test_runner.py              # Flask server for the Playground (port 5555)
-├── requirements.txt
+├── pyproject.toml              # Project config + dependencies (used by uv)
+├── uv.lock                     # Locked dependency versions (reproducible installs)
+├── .python-version             # Python version pin for uv
 ├── .env.example
 └── README.md
 ```
@@ -228,11 +219,11 @@ RAG-Handson/
 
 ```bash
 # Web playground (recommended — visual feedback at each stage)
-python test_runner.py
+uv run python3 test_runner.py
 # → http://localhost:5555
 
 # CLI tests
-pytest tests/test_pipeline.py -v
+uv run pytest tests/test_pipeline.py -v
 ```
 
 ---
@@ -243,5 +234,5 @@ pytest tests/test_pipeline.py -v
 - Each `src/` file in the solution branch has `# SOLUTION` markers for easy diffing.
 - Expected indexing time: ~10 seconds on a modern laptop.
 - Recommended duration: 3-4 hours for all tasks.
-- To grade: checkout the student's branch, run `pytest tests/test_pipeline.py -v`. All 5 tests should pass.
-- The Playground UI (`python test_runner.py`) is the fastest way to triage student issues — have them share their screen and click through each tab.
+- To grade: checkout the student's branch, run `uv run pytest tests/test_pipeline.py -v`. All 5 tests should pass.
+- The Playground UI (`uv run python3 test_runner.py`) is the fastest way to triage student issues — have them share their screen and click through each tab.
