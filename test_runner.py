@@ -13,9 +13,9 @@ Usage:
 import os
 import traceback
 
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
+app = Flask(__name__, template_folder="templates")
 
 # ---------------------------------------------------------------------------
 # Server-side pipeline cache — progressive state across tabs
@@ -48,11 +48,6 @@ def _error_response(e):
 @app.route("/")
 def index():
     return render_template("test_ui.html")
-
-
-@app.route("/static/images/<path:filename>")
-def serve_image(filename: str):
-    return send_from_directory("static/images", filename)
 
 
 # ---------------------------------------------------------------------------
