@@ -3,7 +3,7 @@ Generation Module for the IITD Helpdesk RAG Pipeline.
 
 This module handles the "G" in RAG — Generation. It takes the retrieved
 context and the student's question, constructs a carefully designed prompt,
-and calls an OpenAI-compatible LLM to produce a grounded answer. The key
+and calls an LLM (via LiteLLM) to produce a grounded answer. The key
 principle: the LLM must ONLY answer from the provided context and cite its
 source. No hallucinations allowed in a college helpdesk.
 """
@@ -68,9 +68,9 @@ def call_llm(
     model: str = "gpt-3.5-turbo",
     base_url: str | None = None,
 ) -> str:
-    """Call an OpenAI-compatible chat completion API.
+    """Call an LLM via LiteLLM (supports OpenAI, Ollama, and many other providers).
 
-    This function wraps the OpenAI API client. The base_url parameter lets
+    This function wraps the LiteLLM library. The base_url parameter lets
     students point at any OpenAI-compatible server — including a local Ollama
     instance running llama3 — without changing any other code.
 
@@ -78,7 +78,7 @@ def call_llm(
         prompt: The complete prompt string (from build_prompt).
         api_key: The API key for authentication.
         model: Which model to use. Defaults to "gpt-3.5-turbo".
-        base_url: Optional base URL for the API. If None, uses OpenAI's default.
+        base_url: Optional base URL for the API (e.g. LiteLLM proxy URL).
             Set to "http://localhost:11434/v1" for Ollama, for example.
 
     Returns:
@@ -89,9 +89,8 @@ def call_llm(
         retrieved and generates a natural-language answer. But it's constrained
         by our prompt to only use the facts we gave it.
     """
-    # The base_url parameter exists so students can use a local model server
-    # (like Ollama) instead of paying for OpenAI API calls. The code stays
-    # the same either way because Ollama exposes an OpenAI-compatible API.
+    # LiteLLM provides a unified interface to 100+ LLM providers.
+    # The same litellm.completion() call works for OpenAI, Ollama, etc.
 
     # A chat completion message list looks like:
     # [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}]
@@ -101,22 +100,21 @@ def call_llm(
     #   call_llm("You are a helpful assistant...\n\nQuestion: ...", api_key="sk-...")
     #   →  "According to attendance_policy.txt, the minimum attendance is 75%..."
 
-    # TODO 3 — Import the OpenAI client library.
-    # Hint: from openai import OpenAI
+    # TODO 3 — Import litellm.
+    # Hint: import litellm
     # ---
-    # TODO 4 — Instantiate the OpenAI client with the api_key and optional base_url.
-    # Hint: OpenAI(api_key=api_key, base_url=base_url) — base_url can be None.
+    # TODO 4 — Create the messages list for the chat completion.
+    # Use "user" role for the prompt.
+    # Hint: [{"role": "user", "content": prompt}]
     # ---
-    # TODO 5 — Create the messages list for the chat completion.
-    # Use "system" role for the grounding instruction and "user" role for the prompt.
-    # Hint: [{"role": "user", "content": prompt}] — or split system/user if you prefer.
+    # TODO 5 — Call litellm.completion() with the model, messages, api_key,
+    # and optional api_base.
+    # Hint: response = litellm.completion(model=model, messages=messages,
+    #                                     api_key=api_key, api_base=base_url)
     # ---
-    # TODO 6 — Call client.chat.completions.create() with the model and messages.
-    # Hint: response = client.chat.completions.create(model=model, messages=messages)
-    # ---
-    # TODO 7 — Extract and return the response text.
+    # TODO 6 — Extract and return the response text.
     # Hint: response.choices[0].message.content
-    raise NotImplementedError("Step 3-7: Call the OpenAI-compatible API and return the response")
+    raise NotImplementedError("Step 3-6: Call the LLM via LiteLLM and return the response")
 
 
 def generate_answer(
@@ -150,9 +148,9 @@ def generate_answer(
     #   generate_answer("What is attendance?", context, api_key="sk-...")
     #   →  "According to attendance_policy.txt, the minimum attendance is 75%..."
 
-    # TODO 8 — Call build_prompt() to construct the prompt.
+    # TODO 7 — Call build_prompt() to construct the prompt.
     # ---
-    # TODO 9 — Call call_llm() with the prompt and API credentials.
+    # TODO 8 — Call call_llm() with the prompt and API credentials.
     # ---
-    # TODO 10 — Return the LLM's response.
-    raise NotImplementedError("Step 8-10: Orchestrate prompt building and LLM call")
+    # TODO 9 — Return the LLM's response.
+    raise NotImplementedError("Step 7-9: Orchestrate prompt building and LLM call")

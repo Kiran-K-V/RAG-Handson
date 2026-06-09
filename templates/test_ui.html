@@ -981,6 +981,43 @@ const state = {
     indexBuilding: false,
 };
 
+// ── Rotating placeholder suggestions ──
+const sampleQuestions = [
+    "What is the minimum attendance required?",
+    "What is the CGPA cutoff for placements?",
+    "What happens if attendance falls below 65%?",
+    "When does the placement season start?",
+    "What are the hostel timings?",
+    "How do I apply for medical leave?",
+    "What is a Pre-Placement Offer (PPO)?",
+    "What are the library timings?",
+    "What is the dress code for placement events?",
+    "Can I sit for Dream companies after accepting a Mass Recruiter offer?",
+    "How is attendance tracked in online classes?",
+    "What are the mess timings?",
+    "Who are the top recruiters at IITD?",
+    "What is the anti-blacklisting policy?",
+    "How many clubs can a student join?",
+];
+let _placeholderIdx = 0;
+
+function rotatePlaceholders() {
+    const searchInput = document.getElementById('searchQuery');
+    const genInput = document.getElementById('genQuery');
+    if (searchInput && !searchInput.value) {
+        searchInput.setAttribute('placeholder', sampleQuestions[_placeholderIdx]);
+    }
+    if (genInput && !genInput.value) {
+        genInput.setAttribute('placeholder', sampleQuestions[_placeholderIdx]);
+    }
+    _placeholderIdx = (_placeholderIdx + 1) % sampleQuestions.length;
+}
+
+function startPlaceholderRotation() {
+    rotatePlaceholders();
+    setInterval(rotatePlaceholders, 3000);
+}
+
 function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -1449,6 +1486,7 @@ function toggleCollapsible(el) {
 
 // ── Init ──
 updatePrereqs();
+startPlaceholderRotation();
 </script>
 </body>
 </html>
