@@ -746,7 +746,7 @@
                     <span class="index-label" id="indexStatus">Index will be built automatically on first search.</span>
                 </div>
                 <div class="search-bar">
-                    <input class="search-input" id="searchQuery" placeholder="Ask a question — e.g. 'What is the CGPA cutoff for placements?'" onkeydown="if(event.key==='Enter')runSearch()">
+                    <input class="search-input" id="searchQuery" placeholder="What is the minimum attendance required?" onkeydown="if(event.key==='Enter')runSearch()">
                     <select class="select-sm" id="searchType" title="Search mode">
                         <option value="semantic" selected>Semantic</option>
                         <option value="keyword">Keyword</option>
@@ -773,7 +773,7 @@
             <div id="genPrereq"></div>
             <div id="genControls" style="display:none;">
                 <div class="search-bar">
-                    <input class="search-input" id="genQuery" placeholder="Ask a question — e.g. 'What happens if attendance falls below 75%?'" onkeydown="if(event.key==='Enter')runGenerate()">
+                    <input class="search-input" id="genQuery" placeholder="What is the minimum attendance required?" onkeydown="if(event.key==='Enter')runGenerate()">
                     <button class="btn btn-primary" id="btnGenerate" onclick="runGenerate()">Generate</button>
                 </div>
                 <div id="genResult"></div>
@@ -1001,6 +1001,44 @@ const state = {
     indexBuilt: false,
     indexBuilding: false,
 };
+
+// ── Rotating placeholder suggestions ──
+const sampleQuestions = [
+    "What is the minimum attendance required?",
+    "What is the CGPA cutoff for placements?",
+    "What happens if attendance falls below 65%?",
+    "When does the placement season start?",
+    "What are the hostel timings?",
+    "How do I apply for medical leave?",
+    "What is a Pre-Placement Offer (PPO)?",
+    "What are the library timings?",
+    "What is the dress code for placement events?",
+    "Can I sit for Dream companies after accepting a Mass Recruiter offer?",
+    "How is attendance tracked in online classes?",
+    "What are the mess timings?",
+    "Who are the top recruiters at IITD?",
+    "What is the anti-blacklisting policy?",
+    "How many clubs can a student join?",
+];
+let _placeholderIdx = 0;
+let _placeholderTimer = null;
+
+function rotatePlaceholders() {
+    const searchInput = document.getElementById('searchQuery');
+    const genInput = document.getElementById('genQuery');
+    if (searchInput && !searchInput.value) {
+        searchInput.setAttribute('placeholder', sampleQuestions[_placeholderIdx]);
+    }
+    if (genInput && !genInput.value) {
+        genInput.setAttribute('placeholder', sampleQuestions[_placeholderIdx]);
+    }
+    _placeholderIdx = (_placeholderIdx + 1) % sampleQuestions.length;
+}
+
+function startPlaceholderRotation() {
+    rotatePlaceholders();
+    _placeholderTimer = setInterval(rotatePlaceholders, 3000);
+}
 
 function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1487,6 +1525,7 @@ function toggleCollapsible(el) {
 
 // ── Init ──
 updatePrereqs();
+startPlaceholderRotation();
 </script>
 </body>
 </html>
