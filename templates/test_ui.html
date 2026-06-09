@@ -487,23 +487,6 @@
         .collapsible-body { display: none; }
         .collapsible-body.open { display: block; }
 
-        /* ── Index status bar ── */
-        .index-bar {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 0.65rem 1.1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-        }
-        .index-bar .index-label {
-            font-size: 0.82rem;
-            color: var(--text-dim);
-        }
-        .index-bar .index-label.ready { color: var(--green); }
-        .index-bar .index-label.building { color: var(--blue); }
 
         /* ── Guide ── */
         .guide-section { margin-bottom: 2.75rem; }
@@ -737,16 +720,12 @@
         <div class="panel" id="panel-retrieval">
             <div class="panel-header">
                 <h2>Retrieval</h2>
-                <p>Search the indexed documents by semantic similarity. The index is built automatically on your first search.</p>
+                <p>Search the documents by semantic similarity.</p>
             </div>
             <div id="retPrereq"></div>
             <div id="retControls" style="display:none;">
-                <div class="index-bar" id="indexBar">
-                    <span class="spinner-inline" id="indexSpinner" style="display:none;"></span>
-                    <span class="index-label" id="indexStatus">Index will be built automatically on first search.</span>
-                </div>
                 <div class="search-bar">
-                    <input class="search-input" id="searchQuery" placeholder="What is the minimum attendance required?" onkeydown="if(event.key==='Enter')runSearch()">
+                    <input class="search-input" id="searchQuery" placeholder="Ask a question — e.g. 'What is the CGPA cutoff for placements?'" onkeydown="if(event.key==='Enter')runSearch()">
                     <select class="select-sm" id="searchType" title="Search mode">
                         <option value="semantic" selected>Semantic</option>
                         <option value="keyword">Keyword</option>
@@ -773,7 +752,7 @@
             <div id="genPrereq"></div>
             <div id="genControls" style="display:none;">
                 <div class="search-bar">
-                    <input class="search-input" id="genQuery" placeholder="What is the minimum attendance required?" onkeydown="if(event.key==='Enter')runGenerate()">
+                    <input class="search-input" id="genQuery" placeholder="Ask a question — e.g. 'What happens if attendance falls below 75%?'" onkeydown="if(event.key==='Enter')runGenerate()">
                     <button class="btn btn-primary" id="btnGenerate" onclick="runGenerate()">Generate</button>
                 </div>
                 <div id="genResult"></div>
@@ -1002,44 +981,6 @@ const state = {
     indexBuilding: false,
 };
 
-// ── Rotating placeholder suggestions ──
-const sampleQuestions = [
-    "What is the minimum attendance required?",
-    "What is the CGPA cutoff for placements?",
-    "What happens if attendance falls below 65%?",
-    "When does the placement season start?",
-    "What are the hostel timings?",
-    "How do I apply for medical leave?",
-    "What is a Pre-Placement Offer (PPO)?",
-    "What are the library timings?",
-    "What is the dress code for placement events?",
-    "Can I sit for Dream companies after accepting a Mass Recruiter offer?",
-    "How is attendance tracked in online classes?",
-    "What are the mess timings?",
-    "Who are the top recruiters at IITD?",
-    "What is the anti-blacklisting policy?",
-    "How many clubs can a student join?",
-];
-let _placeholderIdx = 0;
-let _placeholderTimer = null;
-
-function rotatePlaceholders() {
-    const searchInput = document.getElementById('searchQuery');
-    const genInput = document.getElementById('genQuery');
-    if (searchInput && !searchInput.value) {
-        searchInput.setAttribute('placeholder', sampleQuestions[_placeholderIdx]);
-    }
-    if (genInput && !genInput.value) {
-        genInput.setAttribute('placeholder', sampleQuestions[_placeholderIdx]);
-    }
-    _placeholderIdx = (_placeholderIdx + 1) % sampleQuestions.length;
-}
-
-function startPlaceholderRotation() {
-    rotatePlaceholders();
-    _placeholderTimer = setInterval(rotatePlaceholders, 3000);
-}
-
 function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -1121,20 +1062,12 @@ async function ensureIndex() {
     if (state.indexBuilding) return false;
 
     state.indexBuilding = true;
-    const statusEl = document.getElementById('indexStatus');
-    const spinner = document.getElementById('indexSpinner');
-
-    if (statusEl) { statusEl.textContent = 'Building index (load → chunk → embed → store)...'; statusEl.className = 'index-label building'; }
-    if (spinner) spinner.style.display = 'inline-block';
 
     try {
         const res = await fetch('/api/build-index', { method: 'POST' });
         const data = await res.json();
         if (!data.success) {
-            if (statusEl) { statusEl.innerHTML = `<span style="color:var(--red)">${esc(data.error)}</span>`; statusEl.className = 'index-label'; }
-            if (spinner) spinner.style.display = 'none';
             state.indexBuilding = false;
-            // Show error in whichever result area triggered it
             const searchResult = document.getElementById('searchResult');
             const genResult = document.getElementById('genResult');
             const errHtml = renderError(data);
@@ -1153,16 +1086,9 @@ async function ensureIndex() {
         setDot('chunking', 'ready');
         setDot('embeddings', 'ready');
         setDot('retrieval', 'ready');
-        if (statusEl) {
-            statusEl.innerHTML = `<span style="color:var(--green)">${data.doc_count} docs &middot; ${data.chunk_count} chunks &middot; ${data.collection_count} indexed</span>`;
-            statusEl.className = 'index-label ready';
-        }
-        if (spinner) spinner.style.display = 'none';
         updatePrereqs();
         return true;
     } catch (err) {
-        if (statusEl) { statusEl.innerHTML = `<span style="color:var(--red)">${esc(err.message)}</span>`; statusEl.className = 'index-label'; }
-        if (spinner) spinner.style.display = 'none';
         state.indexBuilding = false;
         return false;
     }
@@ -1351,8 +1277,6 @@ async function clearDatabase() {
         if (data.success) {
             state.indexBuilt = false;
             state.indexBuilding = false;
-            const statusEl = document.getElementById('indexStatus');
-            if (statusEl) { statusEl.textContent = 'Index cleared. Will rebuild on next search.'; statusEl.className = 'index-label'; }
             setDot('retrieval', '');
             document.getElementById('searchResult').innerHTML = '';
         }
@@ -1401,7 +1325,7 @@ async function runSearch() {
         }
         html += '<div class="result-list">';
         data.results.forEach((r, i) => {
-            const similarity = Math.max(0, 1 - r.distance);
+            const similarity = 1 / (1 + r.distance);
             const simPct = (similarity * 100).toFixed(1);
             const barWidth = (similarity * 100).toFixed(0);
             const barColor = similarity > 0.7 ? 'var(--green)' : similarity > 0.4 ? 'var(--yellow)' : 'var(--red)';
@@ -1525,7 +1449,6 @@ function toggleCollapsible(el) {
 
 // ── Init ──
 updatePrereqs();
-startPlaceholderRotation();
 </script>
 </body>
 </html>
