@@ -3,12 +3,14 @@ Generation Module for the IITD Helpdesk RAG Pipeline.
 
 This module handles the "G" in RAG — Generation. It takes the retrieved
 context and the student's question, constructs a carefully designed prompt,
-and calls an LLM (via LiteLLM) to produce a grounded answer. The key
+and calls an LLM (via the OpenAI client) to produce a grounded answer. The key
 principle: the LLM must ONLY answer from the provided context and cite its
 source. No hallucinations allowed in a college helpdesk.
 """
 
 from typing import Any
+
+from openai import OpenAI
 
 
 def build_prompt(query: str, context: str) -> str:
@@ -68,11 +70,11 @@ def call_llm(
     model: str = "gpt-3.5-turbo",
     base_url: str | None = None,
 ) -> str:
-    """Call an LLM via LiteLLM (supports OpenAI, Ollama, and many other providers).
+    """Call an LLM via the OpenAI client (supports any OpenAI-compatible server).
 
-    This function wraps the LiteLLM library. The base_url parameter lets
+    This function uses the OpenAI Python client. The base_url parameter lets
     students point at any OpenAI-compatible server — including a local Ollama
-    instance running llama3 — without changing any other code.
+    instance running llama3 or a LiteLLM proxy — without changing any other code.
 
     Args:
         prompt: The complete prompt string (from build_prompt).
@@ -89,8 +91,8 @@ def call_llm(
         retrieved and generates a natural-language answer. But it's constrained
         by our prompt to only use the facts we gave it.
     """
-    # LiteLLM provides a unified interface to 100+ LLM providers.
-    # The same litellm.completion() call works for OpenAI, Ollama, etc.
+    # The OpenAI client provides a standard interface to any OpenAI-compatible
+    # API server (OpenAI, LiteLLM proxy, Ollama, etc.)
 
     # A chat completion message list looks like:
     # [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}]
@@ -100,21 +102,19 @@ def call_llm(
     #   call_llm("You are a helpful assistant...\n\nQuestion: ...", api_key="sk-...")
     #   →  "According to attendance_policy.txt, the minimum attendance is 75%..."
 
-    # TODO 3 — Import litellm.
-    # Hint: import litellm
+    # TODO 3 — Create an OpenAI client instance with the api_key and base_url.
+    # Hint: client = OpenAI(api_key=api_key, base_url=base_url)
     # ---
     # TODO 4 — Create the messages list for the chat completion.
     # Use "user" role for the prompt.
     # Hint: [{"role": "user", "content": prompt}]
     # ---
-    # TODO 5 — Call litellm.completion() with the model, messages, api_key,
-    # and optional api_base.
-    # Hint: response = litellm.completion(model=model, messages=messages,
-    #                                     api_key=api_key, api_base=base_url)
+    # TODO 5 — Call client.chat.completions.create() with the model and messages.
+    # Hint: response = client.chat.completions.create(model=model, messages=messages)
     # ---
     # TODO 6 — Extract and return the response text.
     # Hint: response.choices[0].message.content
-    raise NotImplementedError("Step 3-6: Call the LLM via LiteLLM and return the response")
+    raise NotImplementedError("Step 3-6: Call the LLM via OpenAI client and return the response")
 
 
 def generate_answer(
