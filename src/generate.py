@@ -3,9 +3,7 @@ Generation Module for the IITD Helpdesk RAG Pipeline.
 
 This module handles the "G" in RAG — Generation. It takes the retrieved
 context and the student's question, constructs a carefully designed prompt,
-and calls an LLM (via the OpenAI client) to produce a grounded answer. The key
-principle: the LLM must ONLY answer from the provided context and cite its
-source. No hallucinations allowed in a college helpdesk.
+and calls an LLM (via the OpenAI client) to produce a grounded answer.
 """
 
 from typing import Any
@@ -16,52 +14,34 @@ from openai import OpenAI
 def build_prompt(query: str, context: str) -> str:
     """Construct the final prompt string for the LLM.
 
-    The prompt includes a system instruction that constrains the LLM to
-    answer ONLY from the provided context. This is the single most important
-    anti-hallucination measure in the entire pipeline — without it, the LLM
-    might make up policies that don't exist.
+    The prompt must constrain the LLM to answer ONLY from the provided context.
 
     Args:
         query: The student's original question.
-        context: The formatted context string from retrieved chunks
-            (output of format_context).
+        context: The formatted context string from retrieved chunks.
 
     Returns:
         A complete prompt string ready to send to the LLM, containing the
         system instruction, the context, and the user's question.
 
-    Story:
-        If a student asks about a policy that's NOT in our documents, the
-        system prompt tells the LLM to say "I don't have information about
-        that" rather than inventing an answer. This is what makes a helpdesk
-        trustworthy.
     """
-    # The system prompt says "only use the context provided" — this prevents
-    # hallucination. Without this constraint, the LLM would happily invent
-    # policies, exam dates, and phone numbers that don't exist.
-
-    # SAMPLE RETURN — what your implementation should produce:
+    # SAMPLE RETURN:
     #   build_prompt("What is the attendance policy?", "[Source: ...]\nMin 75%\n---")
     #   →  "You are a helpful assistant for IIT Dholakpur...
-    #       Context:
-    #       [Source: ...]\nMin 75%\n---
-    #
-    #       Question: What is the attendance policy?
-    #
-    #       Answer:"
+    #       Context:\n[Source: ...]\nMin 75%\n---\n\nQuestion: ...\n\nAnswer:"
 
-    # TODO 1 — Define a system instruction string that tells the LLM:
-    #   - It is a helpful assistant for IIT Dholakpur students
-    #   - It must ONLY answer based on the provided context
-    #   - It must cite the source document in its answer
-    #   - If the context doesn't contain the answer, say so honestly
-    # Hint: Use a multi-line f-string or triple-quoted string.
+    # TODO 1 — Write a system instruction that:
+    #   - Identifies the assistant as an IIT Dholakpur helpdesk
+    #   - Constrains answers to ONLY the provided context
+    #   - Requires citing the source document
+    #   - Handles "I don't know" gracefully
     # ---
-    # TODO 2 — Combine the system instruction, context, and query into a
-    # single prompt string with clear section delimiters.
-    # Hint: Something like:
-    #   f"{system_instruction}\n\nContext:\n{context}\n\nQuestion: {query}\n\nAnswer:"
-    raise NotImplementedError("Step 1-2: Build a prompt that grounds the LLM in context")
+
+    # TODO 2 — Combine system instruction + context + question into final prompt.
+    #   Format: "{instruction}\n\nContext:\n{context}\n\nQuestion: {query}\n\nAnswer:"
+    # ---
+
+    raise NotImplementedError("Implement build_prompt")
 
 
 def call_llm(
@@ -72,49 +52,31 @@ def call_llm(
 ) -> str:
     """Call an LLM via the OpenAI client (supports any OpenAI-compatible server).
 
-    This function uses the OpenAI Python client. The base_url parameter lets
-    students point at any OpenAI-compatible server — including a local Ollama
-    instance running llama3 or a LiteLLM proxy — without changing any other code.
-
     Args:
         prompt: The complete prompt string (from build_prompt).
         api_key: The API key for authentication.
         model: Which model to use. Defaults to "gpt-3.5-turbo".
-        base_url: Optional base URL for the API (e.g. LiteLLM proxy URL).
-            Set to "http://localhost:11434/v1" for Ollama, for example.
+        base_url: Optional base URL for the API (e.g. Ollama at localhost:11434/v1).
 
     Returns:
         The LLM's response text as a plain string.
 
-    Story:
-        This is where the magic happens — the LLM reads the context we
-        retrieved and generates a natural-language answer. But it's constrained
-        by our prompt to only use the facts we gave it.
     """
-    # The OpenAI client provides a standard interface to any OpenAI-compatible
-    # API server (OpenAI, LiteLLM proxy, Ollama, etc.)
-
-    # A chat completion message list looks like:
-    # [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}]
-    # The system message sets the LLM's behaviour, the user message is the query.
-
-    # SAMPLE RETURN — what your implementation should produce:
-    #   call_llm("You are a helpful assistant...\n\nQuestion: ...", api_key="sk-...")
+    # SAMPLE RETURN:
+    #   call_llm("You are a helpful assistant...", api_key="sk-...")
     #   →  "According to attendance_policy.txt, the minimum attendance is 75%..."
 
-    # TODO 3 — Create an OpenAI client instance with the api_key and base_url.
-    # Hint: client = OpenAI(api_key=api_key, base_url=base_url)
+    # TODO 3 — Create an OpenAI client with the given credentials.
+    # Refer: https://platform.openai.com/docs/api-reference/chat/create
     # ---
-    # TODO 4 — Create the messages list for the chat completion.
-    # Use "user" role for the prompt.
-    # Hint: [{"role": "user", "content": prompt}]
+
+    # TODO 4 — Build the messages list and call chat.completions.create().
     # ---
-    # TODO 5 — Call client.chat.completions.create() with the model and messages.
-    # Hint: response = client.chat.completions.create(model=model, messages=messages)
+
+    # TODO 5 — Extract and return the response content string.
     # ---
-    # TODO 6 — Extract and return the response text.
-    # Hint: response.choices[0].message.content
-    raise NotImplementedError("Step 3-6: Call the LLM via OpenAI client and return the response")
+
+    raise NotImplementedError("Implement call_llm")
 
 
 def generate_answer(
@@ -126,9 +88,6 @@ def generate_answer(
 ) -> str:
     """Orchestrate the full generation step: build prompt → call LLM → return answer.
 
-    This is a convenience function that ties build_prompt and call_llm together.
-    It exists so that app.py can call a single function for the generation step.
-
     Args:
         query: The student's original question.
         context: The formatted context string from retrieved chunks.
@@ -139,18 +98,8 @@ def generate_answer(
     Returns:
         The LLM's generated answer as a plain string.
 
-    Story:
-        This function is the last step before the student sees an answer.
-        It takes their question, the relevant document chunks, and produces
-        a helpful, cited response.
     """
-    # SAMPLE RETURN — what your implementation should produce:
-    #   generate_answer("What is attendance?", context, api_key="sk-...")
-    #   →  "According to attendance_policy.txt, the minimum attendance is 75%..."
+    # TODO 6 — Call build_prompt(), then call_llm(), then return the answer.
+    # ---
 
-    # TODO 7 — Call build_prompt() to construct the prompt.
-    # ---
-    # TODO 8 — Call call_llm() with the prompt and API credentials.
-    # ---
-    # TODO 9 — Return the LLM's response.
-    raise NotImplementedError("Step 7-9: Orchestrate prompt building and LLM call")
+    raise NotImplementedError("Implement generate_answer")

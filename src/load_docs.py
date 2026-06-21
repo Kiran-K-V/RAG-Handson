@@ -13,32 +13,26 @@ from pathlib import Path
 def validate_folder(folder_path: str) -> bool:
     """Check that the given folder exists and contains at least one .txt file.
 
-    Before we try to load documents, we need to make sure the folder actually
-    exists and has text files in it. Otherwise we'd get confusing errors later
-    in the pipeline.
-
     Args:
         folder_path: Path to the folder that should contain .txt document files.
 
     Returns:
         True if the folder exists and contains one or more .txt files, False otherwise.
 
-    Story:
-        The admin office gave us three text files — but what if someone moves
-        the data/ folder or forgets to clone it? This function catches that
-        problem early so we can give a helpful error message.
     """
-    # SAMPLE RETURN — what your implementation should produce:
+    # SAMPLE RETURN:
     #   validate_folder("data")  →  True
     #   validate_folder("nonexistent_folder")  →  False
 
-    # TODO 1 — We need to confirm the folder exists before doing anything else.
-    # Hint: pathlib.Path has an .exists() method and an .is_dir() method.
+    # TODO 1 — Verify the folder exists and is actually a directory.
+    # Refer: https://docs.python.org/3/library/pathlib.html#pathlib.Path.exists
     # ---
-    # TODO 2 — Check that there is at least one .txt file inside the folder.
-    # Hint: pathlib.Path.glob("*.txt") returns a generator of matching paths.
-    # Convert it to a list to check its length.
-    raise NotImplementedError("Step 1-2: Validate that the folder path is real and contains .txt files")
+
+    # TODO 2 — Confirm there's at least one .txt file inside.
+    # Refer: https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob
+    # ---
+
+    raise NotImplementedError("Implement validate_folder")
 
 
 def load_documents(folder_path: str) -> dict[str, str]:
@@ -57,13 +51,8 @@ def load_documents(folder_path: str) -> dict[str, str]:
     Raises:
         FileNotFoundError: If the folder does not exist or contains no .txt files.
 
-    Story:
-        The helpdesk has three source documents. We load them all into memory
-        so that the next stage (chunking) can break them into smaller pieces.
-        We keep track of which file each piece came from — that's how the chatbot
-        will cite its sources later.
     """
-    # SAMPLE RETURN — what your implementation should produce:
+    # SAMPLE RETURN:
     #   load_documents("data")
     #   →  {
     #       "attendance_policy.txt": "IIT DHOLAKPUR — ATTENDANCE POLICY ...",
@@ -71,16 +60,16 @@ def load_documents(folder_path: str) -> dict[str, str]:
     #       "placement_guidelines.txt": "IIT DHOLAKPUR — PLACEMENT GUIDELINES ...",
     #   }
 
-    # TODO 3 — Use validate_folder() to check the path first.
-    # If validation fails, raise a FileNotFoundError with a helpful message.
-    # Hint: Call the function you just implemented above.
+    # TODO 3 — Validate the folder first (use your function above).
+    #   Return an empty dict or raise FileNotFoundError if invalid.
     # ---
-    # TODO 4 — List all .txt files in the folder.
-    # Hint: Use pathlib.Path(folder_path).glob("*.txt") to find them.
+
+    # TODO 4 — Find all .txt files in the folder.
+    # Refer: pathlib.Path.glob()
     # ---
-    # TODO 5 — Read each file with UTF-8 encoding and store it in the dict.
-    # The key should be just the filename (e.g., "college_handbook.txt"), not the full path.
-    # Hint: Path objects have a .name attribute and a .read_text(encoding=...) method.
+
+    # TODO 5 — Read each file and build {filename: content} dict.
+    # Refer: pathlib.Path.name, pathlib.Path.read_text()
     # ---
-    # TODO 6 — Return the completed dictionary.
-    raise NotImplementedError("Step 3-6: Load .txt files from the folder into a dict")
+
+    raise NotImplementedError("Implement load_documents")
