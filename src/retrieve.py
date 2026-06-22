@@ -39,8 +39,8 @@ def retrieve_chunks(
     #   ]
 
     # TODO 1 — Call collection.query() with the embedding.
-    # Refer: https://docs.trychroma.com/docs/collections/query-data
     # Note: query_embeddings expects a LIST of embeddings (batch interface).
+    # Pass [query_embedding] (wrapped in a list) and n_results.
     # ---
 
     # TODO 2 — Parse ChromaDB's response format.

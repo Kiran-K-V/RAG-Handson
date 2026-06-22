@@ -25,7 +25,7 @@ def load_embedding_model(model_name: str = "all-MiniLM-L6-v2") -> Any:
     #   →  <SentenceTransformer object>
 
     # TODO 1 — Import and instantiate SentenceTransformer with model_name.
-    # Refer: https://www.sbert.net/docs/package_reference/SentenceTransformer.html
+    # from sentence_transformers import SentenceTransformer, then return the instance.
     # ---
 
     raise NotImplementedError("Implement load_embedding_model")

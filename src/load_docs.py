@@ -25,11 +25,11 @@ def validate_folder(folder_path: str) -> bool:
     #   validate_folder("nonexistent_folder")  →  False
 
     # TODO 1 — Verify the folder exists and is actually a directory.
-    # Refer: https://docs.python.org/3/library/pathlib.html#pathlib.Path.exists
+    # Use Path(folder_path).exists() and .is_dir() — return False if either fails.
     # ---
 
     # TODO 2 — Confirm there's at least one .txt file inside.
-    # Refer: https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob
+    # Use Path(folder_path).glob("*.txt") and check if the generator yields anything.
     # ---
 
     raise NotImplementedError("Implement validate_folder")
@@ -65,11 +65,11 @@ def load_documents(folder_path: str) -> dict[str, str]:
     # ---
 
     # TODO 4 — Find all .txt files in the folder.
-    # Refer: pathlib.Path.glob()
+    # Use Path(folder_path).glob("*.txt") to get an iterator of matching paths.
     # ---
 
     # TODO 5 — Read each file and build {filename: content} dict.
-    # Refer: pathlib.Path.name, pathlib.Path.read_text()
+    # Use .name for the key and .read_text(encoding="utf-8") for the value.
     # ---
 
     raise NotImplementedError("Implement load_documents")

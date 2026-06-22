@@ -67,13 +67,15 @@ def call_llm(
     #   →  "According to attendance_policy.txt, the minimum attendance is 75%..."
 
     # TODO 3 — Create an OpenAI client with the given credentials.
-    # Refer: https://platform.openai.com/docs/api-reference/chat/create
+    # Use: OpenAI(api_key=api_key, base_url=base_url)
     # ---
 
     # TODO 4 — Build the messages list and call chat.completions.create().
+    # Messages format: [{"role": "user", "content": prompt}]
     # ---
 
     # TODO 5 — Extract and return the response content string.
+    # Access: response.choices[0].message.content
     # ---
 
     raise NotImplementedError("Implement call_llm")

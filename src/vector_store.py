@@ -25,7 +25,7 @@ def get_chroma_client(persist_directory: str = "chroma_db") -> Any:
     #   →  <chromadb.PersistentClient object>
 
     # TODO 1 — Create and return a ChromaDB persistent client.
-    # Refer: https://docs.trychroma.com/docs/run-chroma/persistent-client
+    # Import chromadb, then use chromadb.PersistentClient(path=persist_directory).
     # ---
 
     raise NotImplementedError("Implement get_chroma_client")
@@ -48,7 +48,7 @@ def create_collection(client: Any, collection_name: str = "dholakpur_helpdesk") 
     #   →  <chromadb.Collection object>
 
     # TODO 2 — Use an idempotent method to get or create the collection.
-    # Refer: https://docs.trychroma.com/docs/collections/create-get-delete
+    # client.get_or_create_collection(name=...) won't fail if it already exists.
     # ---
 
     raise NotImplementedError("Implement create_collection")
@@ -77,7 +77,6 @@ def add_chunks(
     # ---
 
     # TODO 4 — Add everything to the collection in one call.
-    # Refer: https://docs.trychroma.com/docs/collections/add-data
     # The collection.add() method needs: ids, documents, embeddings, metadatas.
     # ---
 
